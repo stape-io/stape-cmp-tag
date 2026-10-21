@@ -1,0 +1,443 @@
+scenarios:
+- name: '[Stand down] A page that already has __stapeCmp gets no default, no namespace write and no injection'
+  code: |-
+    fakeWindow.__stapeCmp = { dataLayer: 'dataLayer', gcmFloor: true };
+
+    runCode(createMockData({ adsDataRedaction: true, urlPassthrough: true }));
+
+    assertApi('gtmOnSuccess').wasCalled();
+    assertApi('gtmOnFailure').wasNotCalled();
+    assertApi('setDefaultConsentState').wasNotCalled();
+    assertApi('gtagSet').wasNotCalled();
+    assertApi('setInWindow').wasNotCalled();
+    assertApi('injectScript').wasNotCalled();
+- name: '[Stand down] An empty __stapeCmp namespace still stands the tag down'
+  code: |-
+    fakeWindow.__stapeCmp = {};
+
+    runCode(createMockData());
+
+    assertApi('gtmOnSuccess').wasCalled();
+    assertApi('gtmOnFailure').wasNotCalled();
+    assertApi('setDefaultConsentState').wasNotCalled();
+    assertApi('setInWindow').wasNotCalled();
+    assertApi('injectScript').wasNotCalled();
+- name: '[Stand down] A namespace left by the loader with another data layer name stands the tag down'
+  code: |-
+    fakeWindow.__stapeCmp = { dataLayer: 'siteLayer', gcmFloor: true };
+
+    runCode(createMockData({ dataLayerName: 'myLayer' }));
+
+    assertApi('setDefaultConsentState').wasNotCalled();
+    assertApi('setInWindow').wasNotCalled();
+    assertApi('injectScript').wasNotCalled();
+    expectSuccess();
+- name: '[Stand down] A second run on the same page stands down after the first one wrote the namespace'
+  code: |-
+    runCode(createMockData());
+    runCode(createMockData());
+
+    var defaults = 0;
+    var injections = 0;
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (calls[i] === 'setDefaultConsentState') defaults++;
+      if (calls[i] === 'injectScript') injections++;
+    }
+    assertThat(defaults).isEqualTo(1);
+    assertThat(injections).isEqualTo(1);
+    expectSuccess();
+- name: '[Default] Sets the denied floor with security_storage granted and a 500 ms wait'
+  code: |-
+    runCode(createMockData());
+
+    assertApi('setDefaultConsentState').wasCalledWith({
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      functionality_storage: 'denied',
+      personalization_storage: 'denied',
+      security_storage: 'granted',
+      wait_for_update: 500
+    });
+    var defaults = 0;
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (calls[i] === 'setDefaultConsentState') defaults++;
+    }
+    assertThat(defaults).isEqualTo(1);
+    expectSuccess();
+- name: '[Namespace] Writes only dataLayer and gcmFloor, with the default data layer name'
+  code: |-
+    runCode(createMockData());
+
+    assertApi('setInWindow').wasCalledWith('__stapeCmp', { dataLayer: 'dataLayer', gcmFloor: true }, false);
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    expectSuccess();
+- name: '[Namespace] Writes a custom data layer name'
+  code: |-
+    runCode(createMockData({ dataLayerName: 'myLayer' }));
+
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'myLayer', gcmFloor: true });
+    expectSuccess();
+- name: '[Namespace] An empty data layer name falls back to dataLayer'
+  code: |-
+    runCode(createMockData({ dataLayerName: '' }));
+
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    expectSuccess();
+- name: '[Namespace] An absent data layer name falls back to dataLayer'
+  code: |-
+    runCode(createMockData({ dataLayerName: undefined }));
+
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    expectSuccess();
+- name: '[Namespace] Writes nothing else on window and never reads or creates the data layer or gtag'
+  code: |-
+    runCode(createMockData({ dataLayerName: 'myLayer' }));
+
+    var allowedReads = ['__stapeCmp'];
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (calls[i].indexOf('setInWindow:') === 0) {
+        assertThat(calls[i]).isEqualTo('setInWindow:__stapeCmp');
+      }
+      if (calls[i].indexOf('copyFromWindow:') === 0) {
+        assertThat(allowedReads.indexOf(calls[i].slice('copyFromWindow:'.length)) >= 0).isTrue();
+      }
+    }
+    assertThat(fakeWindow.gtag).isUndefined();
+    assertThat(fakeWindow.myLayer).isUndefined();
+    assertThat(fakeWindow.dataLayer).isUndefined();
+    expectSuccess();
+- name: '[Order] Default, then the advanced settings, then the namespace, then the injection'
+  code: |-
+    runCode(createMockData({ adsDataRedaction: true }));
+
+    var wanted = ['setDefaultConsentState', 'gtagSet', 'setInWindow:__stapeCmp', 'injectScript'];
+    var seen = [];
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (wanted.indexOf(calls[i]) >= 0) seen.push(calls[i]);
+    }
+    assertThat(seen).isEqualTo(wanted);
+    expectSuccess();
+- name: '[TCF] With the box unticked, no __tcfapi is read or written'
+  code: |-
+    runCode(createMockData());
+
+    assertThat(fakeWindow.__tcfapi).isUndefined();
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      assertThat(calls[i]).isNotEqualTo('copyFromWindow:__tcfapi');
+    }
+    expectSuccess();
+- name: '[TCF] With the box ticked, installs a queue-only __tcfapi and marks the namespace'
+  code: |-
+    runCode(createMockData({ tcf: true }));
+
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true, tcfStub: true });
+    var callback = function () {};
+    fakeWindow.__tcfapi('addEventListener', 2, callback);
+    var queue = fakeWindow.__tcfapi();
+    assertThat(queue.length).isEqualTo(1);
+    assertThat(queue[0][0]).isEqualTo('addEventListener');
+    assertThat(queue[0][1]).isEqualTo(2);
+    assertThat(queue[0][2] === callback).isTrue();
+    expectSuccess();
+- name: '[TCF] With the box ticked, a page that already has __tcfapi keeps it and the namespace has no tcfStub'
+  code: |-
+    var existing = function () {};
+    fakeWindow.__tcfapi = existing;
+
+    runCode(createMockData({ tcf: true }));
+
+    assertThat(fakeWindow.__tcfapi === existing).isTrue();
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    assertApi('injectScript').wasCalled();
+    expectSuccess();
+- name: '[TCF] The queue is on the page before the namespace and the injection'
+  code: |-
+    runCode(createMockData({ tcf: true }));
+
+    var wanted = ['setInWindow:__tcfapi', 'setInWindow:__stapeCmp', 'injectScript'];
+    var seen = [];
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (wanted.indexOf(calls[i]) >= 0) seen.push(calls[i]);
+    }
+    assertThat(seen).isEqualTo(wanted);
+    expectSuccess();
+- name: '[TCF] A ticked box installs nothing on a page that already has __stapeCmp'
+  code: |-
+    fakeWindow.__stapeCmp = { dataLayer: 'dataLayer', gcmFloor: true };
+
+    runCode(createMockData({ tcf: true }));
+
+    assertThat(fakeWindow.__tcfapi).isUndefined();
+    assertApi('setInWindow').wasNotCalled();
+    expectSuccess();
+- name: '[TCF] The queue keeps every command in order with its parameter'
+  code: |-
+    runCode(createMockData({ tcf: true }));
+
+    fakeWindow.__tcfapi('getTCData', 2, function () {}, [1, 2]);
+    fakeWindow.__tcfapi('ping', 2, function () {});
+    var queue = fakeWindow.__tcfapi();
+
+    assertThat(queue.length).isEqualTo(2);
+    assertThat(queue[0][0]).isEqualTo('getTCData');
+    assertThat(queue[0][3]).isEqualTo([1, 2]);
+    assertThat(queue[1][0]).isEqualTo('ping');
+    assertThat(queue[1][3]).isUndefined();
+    expectSuccess();
+- name: '[Advanced] No gtagSet while both boxes are unticked'
+  code: |-
+    runCode(createMockData());
+
+    assertApi('gtagSet').wasNotCalled();
+    expectSuccess();
+- name: '[Advanced] Ticking Redact ads data sets ads_data_redaction only'
+  code: |-
+    runCode(createMockData({ adsDataRedaction: true }));
+
+    assertApi('gtagSet').wasCalledWith({ ads_data_redaction: true });
+    assertApi('gtagSet').wasNotCalledWith({ url_passthrough: true });
+    expectSuccess();
+- name: '[Advanced] Ticking Pass ad click information through URLs sets url_passthrough only'
+  code: |-
+    runCode(createMockData({ urlPassthrough: true }));
+
+    assertApi('gtagSet').wasCalledWith({ url_passthrough: true });
+    assertApi('gtagSet').wasNotCalledWith({ ads_data_redaction: true });
+    expectSuccess();
+- name: '[Advanced] Ticking both sets both'
+  code: |-
+    runCode(createMockData({ adsDataRedaction: true, urlPassthrough: true }));
+
+    assertApi('gtagSet').wasCalledWith({ ads_data_redaction: true });
+    assertApi('gtagSet').wasCalledWith({ url_passthrough: true });
+    expectSuccess();
+- name: '[Inject] The URL carries the container identifier and no lang when the page language is absent'
+  code: |-
+    assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    expectSuccess();
+- name: '[Inject] The URL carries the page language when it is given'
+  code: |-
+    assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=fr-CA');
+    expectSuccess();
+- name: '[Inject] The URL carries no lang when the page language is empty'
+  code: |-
+    assertThat(injectedUrl({ pageLanguage: '' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    expectSuccess();
+- name: '[Inject] The URL carries no lang when the page language is only whitespace'
+  code: |-
+    assertThat(injectedUrl({ pageLanguage: '  \t ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    expectSuccess();
+- name: '[Inject] The page language is trimmed'
+  code: |-
+    assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=de-DE');
+    expectSuccess();
+- name: '[Inject] The URL carries no lang when the page language is not a string'
+  code: |-
+    assertThat(injectedUrl({ pageLanguage: 5 })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    expectSuccess();
+- name: '[Inject] The page language is URL-encoded'
+  code: |-
+    assertThat(injectedUrl({ pageLanguage: 'en US&x=1' })).isEqualTo(
+      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=en%20US%26x%3D1'
+    );
+    expectSuccess();
+- name: '[Inject] A zone that starts with c is accepted'
+  code: |-
+    var url;
+    mock('injectScript', function (u, onSuccess) {
+      url = u;
+      onSuccess();
+    });
+    runCode(createMockData({ stapeDomain: 'abcdefgh.cne.stape.net' }));
+    assertThat(url).isEqualTo('https://abcdefgh.cne.stape.net/abcdefgh/cmp/bundle.js');
+    expectSuccess();
+- name: '[Inject] A stape io domain and the l variant are accepted'
+  code: |-
+    var url;
+    mock('injectScript', function (u, onSuccess) {
+      url = u;
+      onSuccess();
+    });
+    runCode(createMockData({ stapeDomain: 'ijklmnop.lgsr.stape.io' }));
+    assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/bundle.js');
+    expectSuccess();
+- name: '[Inject] A loaded script reports success'
+  code: |-
+    mock('injectScript', function (url, onSuccess, onFailure) {
+      onSuccess();
+    });
+
+    runCode(createMockData());
+
+    assertApi('gtmOnSuccess').wasCalled();
+    assertApi('gtmOnFailure').wasNotCalled();
+- name: '[Inject] A script that fails to load reports failure'
+  code: |-
+    mock('injectScript', function (url, onSuccess, onFailure) {
+      onFailure();
+    });
+
+    runCode(createMockData());
+
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+- name: '[Validation] Rejects a host outside stape net and stape io'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.euf.example.com' });
+- name: '[Validation] Rejects a look-alike suffix'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net.evil.com' });
+- name: '[Validation] Rejects a host that only ends in the suffix text'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.eufstape.net' });
+- name: '[Validation] Rejects an apex host with no container label'
+  code: |-
+    expectRejected({ stapeDomain: 'euf.stape.net' });
+- name: '[Validation] Rejects a host with extra labels'
+  code: |-
+    expectRejected({ stapeDomain: 'a.abcdefgh.euf.stape.net' });
+- name: '[Validation] Rejects a value with a scheme'
+  code: |-
+    expectRejected({ stapeDomain: 'https://abcdefgh.euf.stape.net' });
+- name: '[Validation] Rejects a value with a path'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net/x' });
+- name: '[Validation] Rejects a value with a port'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net:8443' });
+- name: '[Validation] Rejects a value with a space'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net ' });
+- name: '[Validation] Rejects an upper-case host'
+  code: |-
+    expectRejected({ stapeDomain: 'ABCDEFGH.euf.stape.net' });
+- name: '[Validation] Rejects an empty Stape domain'
+  code: |-
+    expectRejected({ stapeDomain: '' });
+- name: '[Validation] Rejects a missing Stape domain'
+  code: |-
+    expectRejected({ stapeDomain: undefined });
+- name: '[Validation] Rejects a Stape domain that is not a string'
+  code: |-
+    expectRejected({ stapeDomain: 12345 });
+- name: '[Validation] Rejects a host whose zone is not followed by stape'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.euf.notstape.net' });
+- name: '[Validation] Rejects a stape host with another top-level domain'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.com' });
+- name: '[Validation] Rejects an empty container label'
+  code: |-
+    expectRejected({ stapeDomain: '.euf.stape.net' });
+- name: '[Validation] Rejects an empty zone label'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh..stape.net' });
+- name: '[Validation] Rejects a label longer than 63 characters'
+  code: |-
+    var label = 'a123456789b123456789c123456789d123456789e123456789f123456789g123';
+    assertThat(label.length).isEqualTo(64);
+
+    expectRejected({ stapeDomain: label + '.euf.stape.net' });
+- name: '[Validation] Accepts a label of exactly 63 characters'
+  code: |-
+    var label = 'a123456789b123456789c123456789d123456789e123456789f123456789g12';
+    assertThat(label.length).isEqualTo(63);
+
+    assertThat(injectedUrl({ stapeDomain: label + '.euf.stape.net' })).isEqualTo(
+      'https://' + label + '.euf.stape.net/' + label + '/cmp/bundle.js'
+    );
+    expectSuccess();
+- name: '[Validation] Rejects a label that starts with a hyphen'
+  code: |-
+    expectRejected({ stapeDomain: '-abcdefgh.euf.stape.net' });
+- name: '[Validation] Rejects a label that ends with a hyphen'
+  code: |-
+    expectRejected({ stapeDomain: 'abcdefgh-.euf.stape.net' });
+- name: '[Validation] Rejects a label with an underscore'
+  code: |-
+    expectRejected({ stapeDomain: 'abcd_efgh.euf.stape.net' });
+- name: '[Validation] Accepts hyphens inside a label'
+  code: |-
+    assertThat(injectedUrl({ stapeDomain: 'abcd-efgh.e-uf.stape.net' })).isEqualTo(
+      'https://abcd-efgh.e-uf.stape.net/abcd-efgh/cmp/bundle.js'
+    );
+    expectSuccess();
+setup: |-
+  var fakeWindow = {};
+  var calls = [];
+
+  var baseMockData = {
+    stapeDomain: 'abcdefgh.euf.stape.net',
+    tcf: false,
+    adsDataRedaction: false,
+    urlPassthrough: false,
+    dataLayerName: 'dataLayer'
+  };
+
+  function createMockData(overrides) {
+    var result = {};
+    var key;
+    for (key in baseMockData) {
+      result[key] = baseMockData[key];
+    }
+    overrides = overrides || {};
+    for (key in overrides) {
+      result[key] = overrides[key];
+    }
+    return result;
+  }
+
+  mock('copyFromWindow', function (key) {
+    calls.push('copyFromWindow:' + key);
+    return fakeWindow[key];
+  });
+  mock('setInWindow', function (key, value) {
+    calls.push('setInWindow:' + key);
+    fakeWindow[key] = value;
+    return true;
+  });
+  mock('setDefaultConsentState', function () {
+    calls.push('setDefaultConsentState');
+  });
+  mock('gtagSet', function () {
+    calls.push('gtagSet');
+  });
+  mock('injectScript', function (url, onSuccess) {
+    calls.push('injectScript');
+    onSuccess();
+  });
+
+  function expectRejected(overrides) {
+    runCode(createMockData(overrides));
+
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
+    assertApi('setDefaultConsentState').wasNotCalled();
+    assertApi('gtagSet').wasNotCalled();
+    assertApi('setInWindow').wasNotCalled();
+    assertApi('injectScript').wasNotCalled();
+  }
+
+  function expectSuccess() {
+    assertApi('gtmOnSuccess').wasCalled();
+    assertApi('gtmOnFailure').wasNotCalled();
+  }
+
+  function injectedUrl(overrides) {
+    var url;
+    mock('injectScript', function (u, onSuccess) {
+      url = u;
+      onSuccess();
+    });
+    runCode(createMockData(overrides));
+    return url;
+  }

@@ -1,0 +1,5 @@
+homepage: 'https://stape.io/'
+documentation: 'https://github.com/stape-io/stape-cmp-tag'
+versions:
+  - sha: 4301215f191ee9125ccccafb53c7320f2a5cff5f
+    changeNotes: Initial release.

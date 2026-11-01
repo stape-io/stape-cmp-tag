@@ -16,6 +16,8 @@ if (!isStapeDomain(stapeDomain)) return data.gtmOnFailure();
 
 if (copyFromWindow('__stapeCmp')) return data.gtmOnSuccess();
 
+gtagSet({ 'developer_id.dNjQ3Nj': true });
+
 setDefaultConsentState({
   ad_storage: 'denied',
   ad_user_data: 'denied',

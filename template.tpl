@@ -122,7 +122,7 @@ if (!isStapeDomain(stapeDomain)) return data.gtmOnFailure();
 
 if (copyFromWindow('__stapeCmp')) return data.gtmOnSuccess();
 
-gtagSet({ 'developer_id.dNjQ3Nj': true });
+gtagSet('developer_id.dNjQ3Nj', true);
 
 setDefaultConsentState({
   ad_storage: 'denied',
@@ -804,15 +804,15 @@ scenarios:
   code: |-
     runCode(createMockData());
 
-    assertApi('gtagSet').wasCalledWith({ 'developer_id.dNjQ3Nj': true });
-    assertThat(gtagSetArgs[0]).isEqualTo({ 'developer_id.dNjQ3Nj': true });
+    assertApi('gtagSet').wasCalledWith('developer_id.dNjQ3Nj', true);
+    assertThat(gtagSetArgs[0]).isEqualTo(['developer_id.dNjQ3Nj', true]);
     assertThat(calls.indexOf('gtagSet')).isLessThan(calls.indexOf('setDefaultConsentState'));
     expectSuccess();
 - name: '[Advanced] Only the developer ID is set while both boxes are unticked'
   code: |-
     runCode(createMockData());
 
-    assertThat(gtagSetArgs).isEqualTo([{ 'developer_id.dNjQ3Nj': true }]);
+    assertThat(gtagSetArgs).isEqualTo([['developer_id.dNjQ3Nj', true]]);
     expectSuccess();
 - name: '[Advanced] Ticking Redact ads data sets ads_data_redaction only'
   code: |-
@@ -1024,9 +1024,9 @@ setup: |-
     calls.push('setDefaultConsentState');
   });
   var gtagSetArgs = [];
-  mock('gtagSet', function (value) {
+  mock('gtagSet', function (keyOrObject, value) {
     calls.push('gtagSet');
-    gtagSetArgs.push(value);
+    gtagSetArgs.push(value === undefined ? [keyOrObject] : [keyOrObject, value]);
   });
   mock('injectScript', function (url, onSuccess) {
     calls.push('injectScript');

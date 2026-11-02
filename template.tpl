@@ -1062,6 +1062,9 @@ setup: |-
 
 ___NOTES___
 
+2026-11-02 - Change Notes:
+  - Set Stape's Google tag developer ID (developer_id.dNjQ3Nj) before the Consent Mode default so Google can attribute the consent setup to Stape's CMP
+
 2026-10-21 - Change Notes:
   - Add the Stape CMP tag: on Consent Initialization it sets the denied Consent Mode default (security_storage granted, 500 ms wait for the CMP) and loads the CMP bundle from the container's Stape domain, so sites that load GTM from googletagmanager.com get the banner without the Custom Loader
   - Stand down when window.__stapeCmp already exists, so a page the Custom Loader serves, a duplicated tag or a second container never gets a second default or a second bundle; otherwise record the data layer name and the Consent Mode floor marker there for the CMP runtime, the only global the tag can access

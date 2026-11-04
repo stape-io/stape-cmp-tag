@@ -122,6 +122,8 @@ if (!isStapeDomain(stapeDomain)) return data.gtmOnFailure();
 
 if (copyFromWindow('__stapeCmp')) return data.gtmOnSuccess();
 
+gtagSet('developer_id.dNjQ3Nj', true);
+
 setDefaultConsentState({
   ad_storage: 'denied',
   ad_user_data: 'denied',
@@ -583,6 +585,10 @@ ___WEB_PERMISSIONS___
               {
                 "type": 1,
                 "string": "url_passthrough"
+              },
+              {
+                "type": 1,
+                "string": "developer_id.dNjQ3Nj"
               }
             ]
           }
@@ -712,11 +718,11 @@ scenarios:
     assertThat(fakeWindow.myLayer).isUndefined();
     assertThat(fakeWindow.dataLayer).isUndefined();
     expectSuccess();
-- name: '[Order] Default, then the advanced settings, then the namespace, then the injection'
+- name: '[Order] Developer ID, then the default, then the advanced settings, then the namespace, then the injection'
   code: |-
     runCode(createMockData({ adsDataRedaction: true }));
 
-    var wanted = ['setDefaultConsentState', 'gtagSet', 'setInWindow:__stapeCmp', 'injectScript'];
+    var wanted = ['gtagSet', 'setDefaultConsentState', 'gtagSet', 'setInWindow:__stapeCmp', 'injectScript'];
     var seen = [];
     var i;
     for (i = 0; i < calls.length; i++) {
@@ -794,11 +800,19 @@ scenarios:
     assertThat(queue[1][0]).isEqualTo('ping');
     assertThat(queue[1][3]).isUndefined();
     expectSuccess();
-- name: '[Advanced] No gtagSet while both boxes are unticked'
+- name: '[Developer ID] Sets the developer ID before the default'
   code: |-
     runCode(createMockData());
 
-    assertApi('gtagSet').wasNotCalled();
+    assertApi('gtagSet').wasCalledWith('developer_id.dNjQ3Nj', true);
+    assertThat(gtagSetArgs[0]).isEqualTo(['developer_id.dNjQ3Nj', true]);
+    assertThat(calls.indexOf('gtagSet')).isLessThan(calls.indexOf('setDefaultConsentState'));
+    expectSuccess();
+- name: '[Advanced] Only the developer ID is set while both boxes are unticked'
+  code: |-
+    runCode(createMockData());
+
+    assertThat(gtagSetArgs).isEqualTo([['developer_id.dNjQ3Nj', true]]);
     expectSuccess();
 - name: '[Advanced] Ticking Redact ads data sets ads_data_redaction only'
   code: |-
@@ -1009,8 +1023,10 @@ setup: |-
   mock('setDefaultConsentState', function () {
     calls.push('setDefaultConsentState');
   });
-  mock('gtagSet', function () {
+  var gtagSetArgs = [];
+  mock('gtagSet', function (keyOrObject, value) {
     calls.push('gtagSet');
+    gtagSetArgs.push(value === undefined ? [keyOrObject] : [keyOrObject, value]);
   });
   mock('injectScript', function (url, onSuccess) {
     calls.push('injectScript');
@@ -1045,6 +1061,9 @@ setup: |-
 
 
 ___NOTES___
+
+2026-11-02 - Change Notes:
+  - Set Stape's Google tag developer ID (developer_id.dNjQ3Nj) before the Consent Mode default so Google can attribute the consent setup to Stape's CMP
 
 2026-10-21 - Change Notes:
   - Add the Stape CMP tag: on Consent Initialization it sets the denied Consent Mode default (security_storage granted, 500 ms wait for the CMP) and loads the CMP bundle from the container's Stape domain, so sites that load GTM from googletagmanager.com get the banner without the Custom Loader

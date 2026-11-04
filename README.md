@@ -21,11 +21,12 @@ The Stape domain is the container domain under `stape.net` or `stape.io`, not yo
 On each page, in this order:
 
 1. **Stands down** if `window.__stapeCmp` already exists. A page served by the Stape Custom Loader, a duplicated tag and a second container on the page all end here, so the CMP is never installed twice.
-2. **Sets the Consent Mode default** with `setDefaultConsentState`: every signal is `denied` except `security_storage`, which is `granted`, with `wait_for_update` set to 500 ms. There is no per-region table.
-3. **Applies the advanced settings** you ticked, if any (see below).
-4. **Installs the TCF API queue** `window.__tcfapi` when _IAB TCF is on for this container_ is ticked and the page has no `__tcfapi` yet (see _TCF_ below).
-5. **Writes the namespace** `window.__stapeCmp = { dataLayer: <data layer name>, gcmFloor: true }`, with `tcfStub: true` when the tag installed the TCF API queue. Nothing else is written to `window`, the tag never touches your data layer array and it never creates `window.gtag`.
-6. **Loads the CMP** from `https://<Stape domain>/<container identifier>/cmp/bundle.js`. The container identifier is the first label of the Stape domain. The tag reports success or failure to GTM when the script loads or fails.
+2. **Sets Stape's Google tag developer ID** `developer_id.dNjQ3Nj` with `gtagSet`, so Google's tags identify the CMP that set the consent state.
+3. **Sets the Consent Mode default** with `setDefaultConsentState`: every signal is `denied` except `security_storage`, which is `granted`, with `wait_for_update` set to 500 ms. There is no per-region table.
+4. **Applies the advanced settings** you ticked, if any (see below).
+5. **Installs the TCF API queue** `window.__tcfapi` when _IAB TCF is on for this container_ is ticked and the page has no `__tcfapi` yet (see _TCF_ below).
+6. **Writes the namespace** `window.__stapeCmp = { dataLayer: <data layer name>, gcmFloor: true }`, with `tcfStub: true` when the tag installed the TCF API queue. Nothing else is written to `window`, the tag never touches your data layer array and it never creates `window.gtag`.
+7. **Loads the CMP** from `https://<Stape domain>/<container identifier>/cmp/bundle.js`. The container identifier is the first label of the Stape domain. The tag reports success or failure to GTM when the script loads or fails.
 
 ### Language
 
@@ -59,7 +60,7 @@ The `window.__stapeCmp` object exists as soon as the tag runs, but its methods a
 | Injects scripts | Loads the CMP bundle from `https://*.stape.net/*` and `https://*.stape.io/*`. |
 | Accesses global variables | Reads and writes `__stapeCmp`, and `__tcfapi` for the TCF API queue. |
 | Accesses consent state | Sets the default for every Consent Mode signal. |
-| Writes to the data layer | Sets `ads_data_redaction` and `url_passthrough` when those options are ticked. |
+| Writes to the data layer | Sets the developer ID `developer_id.dNjQ3Nj`, and `ads_data_redaction` and `url_passthrough` when those options are ticked. |
 
 ## Open Source
 

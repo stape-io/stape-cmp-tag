@@ -1,5 +1,7 @@
 homepage: 'https://stape.io/'
 documentation: 'https://github.com/stape-io/stape-cmp-tag'
 versions:
+  - sha: 39ed8aec283d1003e067f9f99aeaf41e66b6a221
+    changeNotes: Sets Stape's Google tag developer ID.
   - sha: 4301215f191ee9125ccccafb53c7320f2a5cff5f
     changeNotes: Initial release.

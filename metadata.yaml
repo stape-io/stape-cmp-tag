@@ -1,6 +1,8 @@
 homepage: 'https://stape.io/'
 documentation: 'https://github.com/stape-io/stape-cmp-tag'
 versions:
+  - sha: da4be5f40112fcb4d1cc871a3208b1cd93d7e73e
+    changeNotes: Adds a Microsoft UET option that sets UET's consent default before the CMP loads.
   - sha: 39ed8aec283d1003e067f9f99aeaf41e66b6a221
     changeNotes: Sets Stape's Google tag developer ID.
   - sha: 4301215f191ee9125ccccafb53c7320f2a5cff5f

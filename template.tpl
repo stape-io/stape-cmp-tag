@@ -61,6 +61,14 @@ ___TEMPLATE_PARAMETERS___
     "help": "Tick if <b>IAB TCF v2.2</b> is switched on in your Stape CMP settings.\n<br/><br/>\nThe tag then installs the TCF API (<i>__tcfapi</i>) before Google\u0027s tags load, so they can read the visitor\u0027s TC String.\n<br/><br/>\nLeave unticked if IAB TCF is off."
   },
   {
+    "type": "CHECKBOX",
+    "name": "uet",
+    "checkboxText": "Microsoft UET",
+    "simpleValueType": true,
+    "defaultValue": false,
+    "help": "Tick if <b>Microsoft Consent (UET \u0026 Clarity)</b> is switched on in your Stape CMP settings.\n<br/><br/>\nThe tag then sets Microsoft UET\u0027s consent default (<i>ad_storage</i> denied) in <i>window.uetq</i> before your UET tag can fire. The CMP updates it once the visitor chooses.\n<br/><br/>\nLeave unticked if Microsoft Consent is off: nothing would update the default, so UET would stay denied."
+  },
+  {
     "type": "GROUP",
     "name": "advancedSettings",
     "displayName": "Advanced settings",
@@ -104,6 +112,7 @@ ___TEMPLATE_PARAMETERS___
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
+const callInWindow = require('callInWindow');
 const copyFromWindow = require('copyFromWindow');
 const encodeUriComponent = require('encodeUriComponent');
 const getType = require('getType');
@@ -142,6 +151,11 @@ const namespace = { dataLayer: dataLayerName, gcmFloor: true };
 if (data.tcf && !copyFromWindow('__tcfapi')) {
   setInWindow('__tcfapi', createTcfQueue(), false);
   namespace.tcfStub = true;
+}
+if (data.uet) {
+  if (!copyFromWindow('uetq')) setInWindow('uetq', [], false);
+  callInWindow('uetq.push', 'consent', 'default', { ad_storage: 'denied' });
+  namespace.uetFloor = true;
 }
 setInWindow('__stapeCmp', namespace, false);
 
@@ -284,6 +298,84 @@ ___WEB_PERMISSIONS___
                   {
                     "type": 8,
                     "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "uetq"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "uetq.push"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
                   }
                 ]
               }
@@ -800,6 +892,67 @@ scenarios:
     assertThat(queue[1][0]).isEqualTo('ping');
     assertThat(queue[1][3]).isUndefined();
     expectSuccess();
+- name: '[UET] With the box unticked, uetq is neither read nor written and the namespace has no uetFloor'
+  code: |-
+    runCode(createMockData());
+
+    assertThat(fakeWindow.uetq).isUndefined();
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    assertApi('callInWindow').wasNotCalled();
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      assertThat(calls[i]).isNotEqualTo('copyFromWindow:uetq');
+    }
+    expectSuccess();
+- name: '[UET] With the box ticked, creates uetq holding the denied default and marks the namespace'
+  code: |-
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq).isEqualTo(['consent', 'default', { ad_storage: 'denied' }]);
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true, uetFloor: true });
+    assertApi('callInWindow').wasCalledWith('uetq.push', 'consent', 'default', { ad_storage: 'denied' });
+    expectSuccess();
+- name: '[UET] With the box ticked, a page that already runs UET keeps its uetq, which receives the default'
+  code: |-
+    var pushed = [];
+    var existing = {
+      push: function (command, type, settings) {
+        pushed.push([command, type, settings]);
+      }
+    };
+    fakeWindow.uetq = existing;
+
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq === existing).isTrue();
+    assertThat(pushed).isEqualTo([['consent', 'default', { ad_storage: 'denied' }]]);
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      assertThat(calls[i]).isNotEqualTo('setInWindow:uetq');
+    }
+    assertThat(fakeWindow.__stapeCmp.uetFloor).isTrue();
+    expectSuccess();
+- name: '[UET] The default is in uetq before the namespace and the injection'
+  code: |-
+    runCode(createMockData({ uet: true, tcf: true }));
+
+    var wanted = ['setInWindow:__tcfapi', 'setInWindow:uetq', 'callInWindow:uetq.push', 'setInWindow:__stapeCmp', 'injectScript'];
+    var seen = [];
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (wanted.indexOf(calls[i]) >= 0) seen.push(calls[i]);
+    }
+    assertThat(seen).isEqualTo(wanted);
+    expectSuccess();
+- name: '[UET] A ticked box pushes nothing on a page that already has __stapeCmp'
+  code: |-
+    fakeWindow.__stapeCmp = { dataLayer: 'dataLayer', gcmFloor: true };
+
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq).isUndefined();
+    assertApi('callInWindow').wasNotCalled();
+    expectSuccess();
 - name: '[Developer ID] Sets the developer ID before the default'
   code: |-
     runCode(createMockData());
@@ -993,6 +1146,7 @@ setup: |-
   var baseMockData = {
     stapeDomain: 'abcdefgh.euf.stape.net',
     tcf: false,
+    uet: false,
     adsDataRedaction: false,
     urlPassthrough: false,
     dataLayerName: 'dataLayer'
@@ -1019,6 +1173,10 @@ setup: |-
     calls.push('setInWindow:' + key);
     fakeWindow[key] = value;
     return true;
+  });
+  mock('callInWindow', function (path, command, type, settings) {
+    calls.push('callInWindow:' + path);
+    if (path === 'uetq.push') fakeWindow.uetq.push(command, type, settings);
   });
   mock('setDefaultConsentState', function () {
     calls.push('setDefaultConsentState');
@@ -1061,6 +1219,9 @@ setup: |-
 
 
 ___NOTES___
+
+2026-11-12 - Change Notes:
+  - Add the Microsoft UET option: when ticked, the tag pushes UET's denied consent default (ad_storage) into window.uetq before the CMP loads, so a UET tag in the same container never fires without a default, and marks the namespace with uetFloor; an existing uetq is kept and receives the push
 
 2026-11-02 - Change Notes:
   - Set Stape's Google tag developer ID (developer_id.dNjQ3Nj) before the Consent Mode default so Google can attribute the consent setup to Stape's CMP

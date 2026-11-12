@@ -193,6 +193,67 @@ scenarios:
     assertThat(queue[1][0]).isEqualTo('ping');
     assertThat(queue[1][3]).isUndefined();
     expectSuccess();
+- name: '[UET] With the box unticked, uetq is neither read nor written and the namespace has no uetFloor'
+  code: |-
+    runCode(createMockData());
+
+    assertThat(fakeWindow.uetq).isUndefined();
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    assertApi('callInWindow').wasNotCalled();
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      assertThat(calls[i]).isNotEqualTo('copyFromWindow:uetq');
+    }
+    expectSuccess();
+- name: '[UET] With the box ticked, creates uetq holding the denied default and marks the namespace'
+  code: |-
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq).isEqualTo(['consent', 'default', { ad_storage: 'denied' }]);
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true, uetFloor: true });
+    assertApi('callInWindow').wasCalledWith('uetq.push', 'consent', 'default', { ad_storage: 'denied' });
+    expectSuccess();
+- name: '[UET] With the box ticked, a page that already runs UET keeps its uetq, which receives the default'
+  code: |-
+    var pushed = [];
+    var existing = {
+      push: function (command, type, settings) {
+        pushed.push([command, type, settings]);
+      }
+    };
+    fakeWindow.uetq = existing;
+
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq === existing).isTrue();
+    assertThat(pushed).isEqualTo([['consent', 'default', { ad_storage: 'denied' }]]);
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      assertThat(calls[i]).isNotEqualTo('setInWindow:uetq');
+    }
+    assertThat(fakeWindow.__stapeCmp.uetFloor).isTrue();
+    expectSuccess();
+- name: '[UET] The default is in uetq before the namespace and the injection'
+  code: |-
+    runCode(createMockData({ uet: true, tcf: true }));
+
+    var wanted = ['setInWindow:__tcfapi', 'setInWindow:uetq', 'callInWindow:uetq.push', 'setInWindow:__stapeCmp', 'injectScript'];
+    var seen = [];
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (wanted.indexOf(calls[i]) >= 0) seen.push(calls[i]);
+    }
+    assertThat(seen).isEqualTo(wanted);
+    expectSuccess();
+- name: '[UET] A ticked box pushes nothing on a page that already has __stapeCmp'
+  code: |-
+    fakeWindow.__stapeCmp = { dataLayer: 'dataLayer', gcmFloor: true };
+
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq).isUndefined();
+    assertApi('callInWindow').wasNotCalled();
+    expectSuccess();
 - name: '[Developer ID] Sets the developer ID before the default'
   code: |-
     runCode(createMockData());
@@ -386,6 +447,7 @@ setup: |-
   var baseMockData = {
     stapeDomain: 'abcdefgh.euf.stape.net',
     tcf: false,
+    uet: false,
     adsDataRedaction: false,
     urlPassthrough: false,
     dataLayerName: 'dataLayer'
@@ -412,6 +474,10 @@ setup: |-
     calls.push('setInWindow:' + key);
     fakeWindow[key] = value;
     return true;
+  });
+  mock('callInWindow', function (path, command, type, settings) {
+    calls.push('callInWindow:' + path);
+    if (path === 'uetq.push') fakeWindow.uetq.push(command, type, settings);
   });
   mock('setDefaultConsentState', function () {
     calls.push('setDefaultConsentState');

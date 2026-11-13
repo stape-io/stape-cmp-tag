@@ -20,7 +20,7 @@ ___INFO___
   "brand": {
     "id": "github.com_stape-io",
     "displayName": "stape-io",
-    "thumbnail": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAABYElEQVR4AZ1TAUQFQRBdhBBCCCGEECCE8IEAkCT1b8ftdrt7oYAQ+gQIAUIA+AgQAoQQAgSAACGEcDjUPHag27vu32McNzNv386bVf9hrywXiGheDcWhtSvahGtt3Jc2/iPL/SVRudybYJy7TW6cctQxpjr3D/z94ag47sbGb7QTHPsdVvCMBqiAGqiSPBXFurbhNpJxTXgk60cNIk4+cXxmxp1iLqoFB0WxpK2/wGHoaSFCohtEZ4tSP5iIZ7ULJZjjQCIh8TXmiKv3IsLedJHE+jf+f98gggucfI+yeW+K7TYSAMbAxQSRu4KtWLq4Bt9YwhTJkSnXUKtzZ5pu2LCFpNgvOyUkiUNr2bPUnF5xLcwIzdq6m78kUAznGvNJqULRaDKZSzxgUVoR+VXVhcyEcyET90SJXDezbl/1AZ4AGuAiO3MSZ1JhLnyQVrMA9nPjCwjlkcqrHwRYLe504RfU6/XwKT3D8gAAAABJRU5ErkJggg=="
+    "thumbnail": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAABYElEQVR4AZ1TAUQFQRBdhBBCCCGEECCE8IEAkCT1b8ftdrt7oYAQ+gQIAUIA+AgQAoQQAgSAACGEcDjUPHag27vu32McNzNv386bVf9hrywXiGheDcWhtSvahGtt3Jc2/iPL/SVRudybYJy7TW6cctQxpjr3D/z94ag47sbGb7QTHPsdVvCMBqiAGqiSPBXFurbhNpJxTXgk60cNIk4+cXxmxp1iLqoFB0WxpK2/wGHoaSFCohtEZ4tSP5iIZ7ULJZjjQCIh8TXmiKv3IsLedJHE+jf+f98gggucfI+yeW+K7TYSAMbAxQSRu4KtWLq4Bt9YwhTJkSnXUKtzZ5pu2LCFpNgvOyUkiUNr2bPUnF5xLcwIzdq6m78kUAznGvNJqULRaDKZSzxgUVoR+VXVhcyEcyET90SJXDezbl/1AZ4AGuAiO3MSZ1JhLnyQVrMA9nPjCwjlkcqrHwRYLe504RfU6/XwKT3D8gAAAABJRU5ErkJggg\u003d\u003d"
   },
   "description": "Installs Stape\u0027s CMP. Add on Consent Initialization and enter your container domain. Not needed if your site loads GTM via Stape Custom Loader, as CMP is already installed.",
   "containerContexts": [
@@ -46,10 +46,10 @@ ___TEMPLATE_PARAMETERS___
         "args": [
           "^[a-z0-9]([a-z0-9-]*[a-z0-9])?\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?\\.stape\\.(net|io)$"
         ],
-        "errorMessage": "Enter your Stape container domain, for example abcdefgh.euf.stape.net."
+        "errorMessage": "Enter your Stape container domain, for example abcdefgh.euf.stape.net or abcdefgh.euf.stape.io."
       }
     ],
-    "help": "The domain of your Stape container, for example <i>abcdefgh.euf.stape.net</i>.\n<br/><br/>\nTo find the <b>Stape domain</b>, go to the <a href=\"https://app.stape.io/container\">Stape Admin panel</a>, select the sGTM container, go to the <i>Settings</i> tab and scroll down to the <i>Domains (Tagging Server URLs)</i> section. The domain is after the <i>Built-in container URL</i> text.\n<br/><br/>\nMake sure to:\n<ul><li>use the <i>stape.net</i> or <i>stape.io</i> domain, <b>not</b> your custom domain;</li><li>not include <i>https://</i> or a path.</li></ul>",
+    "help": "The domain of your Stape container, for example \u003ci\u003eabcdefgh.euf.stape.net\u003c/i\u003e or \u003ci\u003eabcdefgh.euf.stape.io\u003c/i\u003e.\n\u003cbr/\u003e\u003cbr/\u003e\nTo find the \u003cb\u003eStape domain\u003c/b\u003e, go to the \u003ca href\u003d\"https://app.stape.io/container\"\u003eStape Admin panel\u003c/a\u003e, select the sGTM container, go to the \u003ci\u003eSettings\u003c/i\u003e tab and scroll down to the \u003ci\u003eDomains (Tagging Server URLs)\u003c/i\u003e section. The domain is after the \u003ci\u003eBuilt-in container URL\u003c/i\u003e text.\n\u003cbr/\u003e\u003cbr/\u003e\nMake sure to:\n\u003cul\u003e\u003cli\u003euse the \u003ci\u003estape.net\u003c/i\u003e or \u003ci\u003estape.io\u003c/i\u003e domain, \u003cb\u003enot\u003c/b\u003e your custom domain;\u003c/li\u003e\u003cli\u003enot include \u003ci\u003ehttps://\u003c/i\u003e or a path.\u003c/li\u003e\u003c/ul\u003e",
     "alwaysInSummary": true
   },
   {
@@ -58,7 +58,15 @@ ___TEMPLATE_PARAMETERS___
     "checkboxText": "IAB TCF is on for this container",
     "simpleValueType": true,
     "defaultValue": false,
-    "help": "Tick if <b>IAB TCF v2.2</b> is switched on in your Stape CMP settings.\n<br/><br/>\nThe tag then installs the TCF API (<i>__tcfapi</i>) before Google\u0027s tags load, so they can read the visitor\u0027s TC String.\n<br/><br/>\nLeave unticked if IAB TCF is off."
+    "help": "Tick if \u003cb\u003eIAB TCF v2.2\u003c/b\u003e is switched on in your Stape CMP settings.\n\u003cbr/\u003e\u003cbr/\u003e\nThe tag then installs the TCF API (\u003ci\u003e__tcfapi\u003c/i\u003e) before Google\u0027s tags load, so they can read the visitor\u0027s TC String.\n\u003cbr/\u003e\u003cbr/\u003e\nLeave unticked if IAB TCF is off."
+  },
+  {
+    "type": "CHECKBOX",
+    "name": "uet",
+    "checkboxText": "Microsoft Consent (UET \u0026 Clarity) is on for this container",
+    "simpleValueType": true,
+    "defaultValue": false,
+    "help": "Tick if \u003cb\u003eMicrosoft Consent (UET \u0026 Clarity)\u003c/b\u003e is switched on in your Stape CMP settings.\n\u003cbr/\u003e\u003cbr/\u003e\nThe tag then sets Microsoft UET\u0027s consent default (\u003ci\u003ead_storage\u003c/i\u003e denied) in \u003ci\u003ewindow.uetq\u003c/i\u003e before your UET tag can fire. The CMP updates it once the visitor chooses.\n\u003cbr/\u003e\u003cbr/\u003e\nLeave unticked if Microsoft Consent is off: nothing would update the default, so UET would stay denied."
   },
   {
     "type": "GROUP",
@@ -69,25 +77,25 @@ ___TEMPLATE_PARAMETERS___
       {
         "type": "CHECKBOX",
         "name": "adsDataRedaction",
-        "checkboxText": "Redact ads data",
+        "checkboxText": "Redact ads data for Google Consent Mode",
         "simpleValueType": true,
         "defaultValue": false,
-        "help": "Sets <i>ads_data_redaction</i> to <i>true</i>.\n<br/><br/>\nWhile <i>ad_storage</i> is denied, Google Ads and Floodlight requests do not carry ad click identifiers (for example, <i>gclid</i>)."
+        "help": "Sets \u003ci\u003eads_data_redaction\u003c/i\u003e to \u003ci\u003etrue\u003c/i\u003e.\n\u003cbr/\u003e\u003cbr/\u003e\nWhile \u003ci\u003ead_storage\u003c/i\u003e is denied, Google Ads and Floodlight requests do not carry ad click identifiers (for example, \u003ci\u003egclid\u003c/i\u003e)."
       },
       {
         "type": "CHECKBOX",
         "name": "urlPassthrough",
-        "checkboxText": "Pass ad click information through URLs",
+        "checkboxText": "Pass ad click information through URLs for Google Consent Mode",
         "simpleValueType": true,
         "defaultValue": false,
-        "help": "Sets <i>url_passthrough</i> to <i>true</i>.\n<br/><br/>\nWhile <i>ad_storage</i> or <i>analytics_storage</i> is denied, ad click and Google Analytics identifiers (for example, <i>gclid</i>) are kept in the page URLs, so conversions can still be measured."
+        "help": "Sets \u003ci\u003eurl_passthrough\u003c/i\u003e to \u003ci\u003etrue\u003c/i\u003e.\n\u003cbr/\u003e\u003cbr/\u003e\nWhile \u003ci\u003ead_storage\u003c/i\u003e or \u003ci\u003eanalytics_storage\u003c/i\u003e is denied, ad click and Google Analytics identifiers (for example, \u003ci\u003egclid\u003c/i\u003e) are kept in the page URLs, so conversions can still be measured."
       },
       {
         "type": "TEXT",
         "name": "pageLanguage",
         "displayName": "Page language",
         "simpleValueType": true,
-        "help": "The language the CMP is shown in, for example <i>en</i> or <i>fr-CA</i>.\n<br/><br/>\nTo follow the page language, select a variable that returns it, such as a Custom JavaScript variable returning <i>document.documentElement.lang</i> (the <i>html lang</i> attribute).\n<br/><br/>\nThe CMP uses the default language of your container when:\n<ul><li>the field is empty;</li><li>the container has no translation for the given language.</li></ul>"
+        "help": "The language the CMP is shown in, for example \u003ci\u003een\u003c/i\u003e or \u003ci\u003efr-CA\u003c/i\u003e.\n\u003cbr/\u003e\u003cbr/\u003e\nTo follow the page language, select a variable that returns it, such as a Custom JavaScript variable returning \u003ci\u003edocument.documentElement.lang\u003c/i\u003e (the \u003ci\u003ehtml lang\u003c/i\u003e attribute).\n\u003cbr/\u003e\u003cbr/\u003e\nThe CMP uses the default language of your container when:\n\u003cul\u003e\u003cli\u003ethe field is empty;\u003c/li\u003e\u003cli\u003ethe container has no translation for the given language.\u003c/li\u003e\u003c/ul\u003e"
       },
       {
         "type": "TEXT",
@@ -95,7 +103,7 @@ ___TEMPLATE_PARAMETERS___
         "displayName": "Data layer name",
         "simpleValueType": true,
         "defaultValue": "dataLayer",
-        "help": "The name of the data layer used by your GTM container.\n<br/><br/>\nChange it <b>only</b> if your GTM container uses a custom data layer name. Otherwise, keep <i>dataLayer</i>."
+        "help": "The name of the data layer used by your GTM container.\n\u003cbr/\u003e\u003cbr/\u003e\nChange it \u003cb\u003eonly\u003c/b\u003e if your GTM container uses a custom data layer name. Otherwise, keep \u003ci\u003edataLayer\u003c/i\u003e."
       }
     ]
   }
@@ -104,6 +112,7 @@ ___TEMPLATE_PARAMETERS___
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
+const callInWindow = require('callInWindow');
 const copyFromWindow = require('copyFromWindow');
 const encodeUriComponent = require('encodeUriComponent');
 const getType = require('getType');
@@ -142,6 +151,11 @@ const namespace = { dataLayer: dataLayerName, gcmFloor: true };
 if (data.tcf && !copyFromWindow('__tcfapi')) {
   setInWindow('__tcfapi', createTcfQueue(), false);
   namespace.tcfStub = true;
+}
+if (data.uet) {
+  setInWindow('uetq', [], false);
+  callInWindow('uetq.push', 'consent', 'default', { ad_storage: 'denied' });
+  namespace.uetFloor = true;
 }
 setInWindow('__stapeCmp', namespace, false);
 
@@ -284,6 +298,84 @@ ___WEB_PERMISSIONS___
                   {
                     "type": 8,
                     "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "uetq"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "uetq.push"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
                   }
                 ]
               }
@@ -606,7 +698,8 @@ ___WEB_PERMISSIONS___
 ___TESTS___
 
 scenarios:
-- name: '[Stand down] A page that already has __stapeCmp gets no default, no namespace write and no injection'
+- name: '[Stand down] A page that already has __stapeCmp gets no default, no namespace
+    write and no injection'
   code: |-
     fakeWindow.__stapeCmp = { dataLayer: 'dataLayer', gcmFloor: true };
 
@@ -629,7 +722,8 @@ scenarios:
     assertApi('setDefaultConsentState').wasNotCalled();
     assertApi('setInWindow').wasNotCalled();
     assertApi('injectScript').wasNotCalled();
-- name: '[Stand down] A namespace left by the loader with another data layer name stands the tag down'
+- name: '[Stand down] A namespace left by the loader with another data layer name
+    stands the tag down'
   code: |-
     fakeWindow.__stapeCmp = { dataLayer: 'siteLayer', gcmFloor: true };
 
@@ -639,7 +733,8 @@ scenarios:
     assertApi('setInWindow').wasNotCalled();
     assertApi('injectScript').wasNotCalled();
     expectSuccess();
-- name: '[Stand down] A second run on the same page stands down after the first one wrote the namespace'
+- name: '[Stand down] A second run on the same page stands down after the first one
+    wrote the namespace'
   code: |-
     runCode(createMockData());
     runCode(createMockData());
@@ -654,7 +749,8 @@ scenarios:
     assertThat(defaults).isEqualTo(1);
     assertThat(injections).isEqualTo(1);
     expectSuccess();
-- name: '[Default] Sets the denied floor with security_storage granted and a 500 ms wait'
+- name: '[Default] Sets the denied floor with security_storage granted and a 500 ms
+    wait'
   code: |-
     runCode(createMockData());
 
@@ -675,7 +771,8 @@ scenarios:
     }
     assertThat(defaults).isEqualTo(1);
     expectSuccess();
-- name: '[Namespace] Writes only dataLayer and gcmFloor, with the default data layer name'
+- name: '[Namespace] Writes only dataLayer and gcmFloor, with the default data layer
+    name'
   code: |-
     runCode(createMockData());
 
@@ -700,7 +797,8 @@ scenarios:
 
     assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
     expectSuccess();
-- name: '[Namespace] Writes nothing else on window and never reads or creates the data layer or gtag'
+- name: '[Namespace] Writes nothing else on window and never reads or creates the
+    data layer or gtag'
   code: |-
     runCode(createMockData({ dataLayerName: 'myLayer' }));
 
@@ -718,7 +816,8 @@ scenarios:
     assertThat(fakeWindow.myLayer).isUndefined();
     assertThat(fakeWindow.dataLayer).isUndefined();
     expectSuccess();
-- name: '[Order] Developer ID, then the default, then the advanced settings, then the namespace, then the injection'
+- name: '[Order] Developer ID, then the default, then the advanced settings, then
+    the namespace, then the injection'
   code: |-
     runCode(createMockData({ adsDataRedaction: true }));
 
@@ -754,7 +853,8 @@ scenarios:
     assertThat(queue[0][1]).isEqualTo(2);
     assertThat(queue[0][2] === callback).isTrue();
     expectSuccess();
-- name: '[TCF] With the box ticked, a page that already has __tcfapi keeps it and the namespace has no tcfStub'
+- name: '[TCF] With the box ticked, a page that already has __tcfapi keeps it and
+    the namespace has no tcfStub'
   code: |-
     var existing = function () {};
     fakeWindow.__tcfapi = existing;
@@ -800,6 +900,67 @@ scenarios:
     assertThat(queue[1][0]).isEqualTo('ping');
     assertThat(queue[1][3]).isUndefined();
     expectSuccess();
+- name: '[UET] With the box unticked, uetq is not written and the namespace has no
+    uetFloor'
+  code: |-
+    runCode(createMockData());
+
+    assertThat(fakeWindow.uetq).isUndefined();
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true });
+    assertApi('callInWindow').wasNotCalled();
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      assertThat(calls[i]).isNotEqualTo('setInWindow:uetq');
+    }
+    expectSuccess();
+- name: '[UET] With the box ticked, creates uetq holding the denied default and marks
+    the namespace'
+  code: |-
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq).isEqualTo(['consent', 'default', { ad_storage: 'denied' }]);
+    assertThat(fakeWindow.__stapeCmp).isEqualTo({ dataLayer: 'dataLayer', gcmFloor: true, uetFloor: true });
+    assertApi('callInWindow').wasCalledWith('uetq.push', 'consent', 'default', { ad_storage: 'denied' });
+    expectSuccess();
+- name: '[UET] With the box ticked, a page that already runs UET keeps its uetq, which
+    receives the default'
+  code: |-
+    var pushed = [];
+    var existing = {
+      push: function (command, type, settings) {
+        pushed.push([command, type, settings]);
+      }
+    };
+    fakeWindow.uetq = existing;
+
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq === existing).isTrue();
+    assertThat(pushed).isEqualTo([['consent', 'default', { ad_storage: 'denied' }]]);
+    assertApi('setInWindow').wasCalledWith('uetq', [], false);
+    assertThat(fakeWindow.__stapeCmp.uetFloor).isTrue();
+    expectSuccess();
+- name: '[UET] The default is in uetq before the namespace and the injection'
+  code: |-
+    runCode(createMockData({ uet: true, tcf: true }));
+
+    var wanted = ['setInWindow:__tcfapi', 'setInWindow:uetq', 'callInWindow:uetq.push', 'setInWindow:__stapeCmp', 'injectScript'];
+    var seen = [];
+    var i;
+    for (i = 0; i < calls.length; i++) {
+      if (wanted.indexOf(calls[i]) >= 0) seen.push(calls[i]);
+    }
+    assertThat(seen).isEqualTo(wanted);
+    expectSuccess();
+- name: '[UET] A ticked box pushes nothing on a page that already has __stapeCmp'
+  code: |-
+    fakeWindow.__stapeCmp = { dataLayer: 'dataLayer', gcmFloor: true };
+
+    runCode(createMockData({ uet: true }));
+
+    assertThat(fakeWindow.uetq).isUndefined();
+    assertApi('callInWindow').wasNotCalled();
+    expectSuccess();
 - name: '[Developer ID] Sets the developer ID before the default'
   code: |-
     runCode(createMockData());
@@ -821,7 +982,8 @@ scenarios:
     assertApi('gtagSet').wasCalledWith({ ads_data_redaction: true });
     assertApi('gtagSet').wasNotCalledWith({ url_passthrough: true });
     expectSuccess();
-- name: '[Advanced] Ticking Pass ad click information through URLs sets url_passthrough only'
+- name: '[Advanced] Ticking Pass ad click information through URLs sets url_passthrough
+    only'
   code: |-
     runCode(createMockData({ urlPassthrough: true }));
 
@@ -835,7 +997,8 @@ scenarios:
     assertApi('gtagSet').wasCalledWith({ ads_data_redaction: true });
     assertApi('gtagSet').wasCalledWith({ url_passthrough: true });
     expectSuccess();
-- name: '[Inject] The URL carries the container identifier and no lang when the page language is absent'
+- name: '[Inject] The URL carries the container identifier and no lang when the page
+    language is absent'
   code: |-
     assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
     expectSuccess();
@@ -843,21 +1006,16 @@ scenarios:
   code: |-
     assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=fr-CA');
     expectSuccess();
-- name: '[Inject] The URL carries no lang when the page language is empty'
+- name: '[Inject] The URL carries no lang when the page language is empty, only
+    whitespace or not a string'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: '' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
-    expectSuccess();
-- name: '[Inject] The URL carries no lang when the page language is only whitespace'
-  code: |-
-    assertThat(injectedUrl({ pageLanguage: '  \t ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    ['', '  \t ', 5].forEach(function (pageLanguage) {
+      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    });
     expectSuccess();
 - name: '[Inject] The page language is trimmed'
   code: |-
     assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=de-DE');
-    expectSuccess();
-- name: '[Inject] The URL carries no lang when the page language is not a string'
-  code: |-
-    assertThat(injectedUrl({ pageLanguage: 5 })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
     expectSuccess();
 - name: '[Inject] The page language is URL-encoded'
   code: |-
@@ -906,56 +1064,40 @@ scenarios:
     assertApi('gtmOnFailure').wasCalled();
     assertApi('gtmOnSuccess').wasNotCalled();
 - name: '[Validation] Rejects a host outside stape net and stape io'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.example.com' });
+  code: 'expectRejected({ stapeDomain: ''abcdefgh.euf.example.com'' });'
 - name: '[Validation] Rejects a look-alike suffix'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net.evil.com' });
+  code: 'expectRejected({ stapeDomain: ''abcdefgh.euf.stape.net.evil.com'' });'
 - name: '[Validation] Rejects a host that only ends in the suffix text'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.eufstape.net' });
+  code: 'expectRejected({ stapeDomain: ''abcdefgh.eufstape.net'' });'
 - name: '[Validation] Rejects an apex host with no container label'
-  code: |-
-    expectRejected({ stapeDomain: 'euf.stape.net' });
+  code: 'expectRejected({ stapeDomain: ''euf.stape.net'' });'
 - name: '[Validation] Rejects a host with extra labels'
+  code: 'expectRejected({ stapeDomain: ''a.abcdefgh.euf.stape.net'' });'
+- name: '[Validation] Rejects a value with a scheme, a path, a port or a space'
   code: |-
-    expectRejected({ stapeDomain: 'a.abcdefgh.euf.stape.net' });
-- name: '[Validation] Rejects a value with a scheme'
-  code: |-
-    expectRejected({ stapeDomain: 'https://abcdefgh.euf.stape.net' });
-- name: '[Validation] Rejects a value with a path'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net/x' });
-- name: '[Validation] Rejects a value with a port'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net:8443' });
-- name: '[Validation] Rejects a value with a space'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net ' });
+    [
+      'https://abcdefgh.euf.stape.net',
+      'abcdefgh.euf.stape.net/x',
+      'abcdefgh.euf.stape.net:8443',
+      'abcdefgh.euf.stape.net '
+    ].forEach(function (stapeDomain) {
+      expectRejected({ stapeDomain: stapeDomain });
+    });
 - name: '[Validation] Rejects an upper-case host'
+  code: 'expectRejected({ stapeDomain: ''ABCDEFGH.euf.stape.net'' });'
+- name: '[Validation] Rejects an empty, missing or non-string Stape domain'
   code: |-
-    expectRejected({ stapeDomain: 'ABCDEFGH.euf.stape.net' });
-- name: '[Validation] Rejects an empty Stape domain'
-  code: |-
-    expectRejected({ stapeDomain: '' });
-- name: '[Validation] Rejects a missing Stape domain'
-  code: |-
-    expectRejected({ stapeDomain: undefined });
-- name: '[Validation] Rejects a Stape domain that is not a string'
-  code: |-
-    expectRejected({ stapeDomain: 12345 });
+    ['', undefined, 12345].forEach(function (stapeDomain) {
+      expectRejected({ stapeDomain: stapeDomain });
+    });
 - name: '[Validation] Rejects a host whose zone is not followed by stape'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.notstape.net' });
+  code: 'expectRejected({ stapeDomain: ''abcdefgh.euf.notstape.net'' });'
 - name: '[Validation] Rejects a stape host with another top-level domain'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.com' });
+  code: 'expectRejected({ stapeDomain: ''abcdefgh.euf.stape.com'' });'
 - name: '[Validation] Rejects an empty container label'
-  code: |-
-    expectRejected({ stapeDomain: '.euf.stape.net' });
+  code: 'expectRejected({ stapeDomain: ''.euf.stape.net'' });'
 - name: '[Validation] Rejects an empty zone label'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh..stape.net' });
+  code: 'expectRejected({ stapeDomain: ''abcdefgh..stape.net'' });'
 - name: '[Validation] Rejects a label longer than 63 characters'
   code: |-
     var label = 'a123456789b123456789c123456789d123456789e123456789f123456789g123';
@@ -972,14 +1114,11 @@ scenarios:
     );
     expectSuccess();
 - name: '[Validation] Rejects a label that starts with a hyphen'
-  code: |-
-    expectRejected({ stapeDomain: '-abcdefgh.euf.stape.net' });
+  code: 'expectRejected({ stapeDomain: ''-abcdefgh.euf.stape.net'' });'
 - name: '[Validation] Rejects a label that ends with a hyphen'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh-.euf.stape.net' });
+  code: 'expectRejected({ stapeDomain: ''abcdefgh-.euf.stape.net'' });'
 - name: '[Validation] Rejects a label with an underscore'
-  code: |-
-    expectRejected({ stapeDomain: 'abcd_efgh.euf.stape.net' });
+  code: 'expectRejected({ stapeDomain: ''abcd_efgh.euf.stape.net'' });'
 - name: '[Validation] Accepts hyphens inside a label'
   code: |-
     assertThat(injectedUrl({ stapeDomain: 'abcd-efgh.e-uf.stape.net' })).isEqualTo(
@@ -993,6 +1132,7 @@ setup: |-
   var baseMockData = {
     stapeDomain: 'abcdefgh.euf.stape.net',
     tcf: false,
+    uet: false,
     adsDataRedaction: false,
     urlPassthrough: false,
     dataLayerName: 'dataLayer'
@@ -1015,10 +1155,15 @@ setup: |-
     calls.push('copyFromWindow:' + key);
     return fakeWindow[key];
   });
-  mock('setInWindow', function (key, value) {
+  mock('setInWindow', function (key, value, overrideExisting) {
     calls.push('setInWindow:' + key);
+    if (!overrideExisting && fakeWindow[key] !== undefined) return false;
     fakeWindow[key] = value;
     return true;
+  });
+  mock('callInWindow', function (path, command, type, settings) {
+    calls.push('callInWindow:' + path);
+    if (path === 'uetq.push' && fakeWindow.uetq) fakeWindow.uetq.push(command, type, settings);
   });
   mock('setDefaultConsentState', function () {
     calls.push('setDefaultConsentState');
@@ -1062,6 +1207,9 @@ setup: |-
 
 ___NOTES___
 
+2026-11-12 - Change Notes:
+  - Add the Microsoft UET option: when ticked, the tag pushes UET's denied consent default (ad_storage) into window.uetq before the CMP loads, so a UET tag in the same container never fires without a default, and marks the namespace with uetFloor; an existing uetq is kept and receives the push
+
 2026-11-02 - Change Notes:
   - Set Stape's Google tag developer ID (developer_id.dNjQ3Nj) before the Consent Mode default so Google can attribute the consent setup to Stape's CMP
 
@@ -1073,3 +1221,4 @@ ___NOTES___
   - Add unit tests and Stape-style help texts, including where to find the Stape domain in the Stape Admin panel
 
 Created on 10/16/2026, 10:30:00 PM
+

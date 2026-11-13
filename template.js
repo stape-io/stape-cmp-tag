@@ -1,3 +1,4 @@
+const callInWindow = require('callInWindow');
 const copyFromWindow = require('copyFromWindow');
 const encodeUriComponent = require('encodeUriComponent');
 const getType = require('getType');
@@ -36,6 +37,11 @@ const namespace = { dataLayer: dataLayerName, gcmFloor: true };
 if (data.tcf && !copyFromWindow('__tcfapi')) {
   setInWindow('__tcfapi', createTcfQueue(), false);
   namespace.tcfStub = true;
+}
+if (data.uet) {
+  setInWindow('uetq', [], false);
+  callInWindow('uetq.push', 'consent', 'default', { ad_storage: 'denied' });
+  namespace.uetFloor = true;
 }
 setInWindow('__stapeCmp', namespace, false);
 

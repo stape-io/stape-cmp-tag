@@ -193,7 +193,7 @@ scenarios:
     assertThat(queue[1][0]).isEqualTo('ping');
     assertThat(queue[1][3]).isUndefined();
     expectSuccess();
-- name: '[UET] With the box unticked, uetq is neither read nor written and the namespace has no uetFloor'
+- name: '[UET] With the box unticked, uetq is not written and the namespace has no uetFloor'
   code: |-
     runCode(createMockData());
 
@@ -202,7 +202,7 @@ scenarios:
     assertApi('callInWindow').wasNotCalled();
     var i;
     for (i = 0; i < calls.length; i++) {
-      assertThat(calls[i]).isNotEqualTo('copyFromWindow:uetq');
+      assertThat(calls[i]).isNotEqualTo('setInWindow:uetq');
     }
     expectSuccess();
 - name: '[UET] With the box ticked, creates uetq holding the denied default and marks the namespace'
@@ -227,10 +227,7 @@ scenarios:
 
     assertThat(fakeWindow.uetq === existing).isTrue();
     assertThat(pushed).isEqualTo([['consent', 'default', { ad_storage: 'denied' }]]);
-    var i;
-    for (i = 0; i < calls.length; i++) {
-      assertThat(calls[i]).isNotEqualTo('setInWindow:uetq');
-    }
+    assertApi('setInWindow').wasCalledWith('uetq', [], false);
     assertThat(fakeWindow.__stapeCmp.uetFloor).isTrue();
     expectSuccess();
 - name: '[UET] The default is in uetq before the namespace and the injection'
@@ -297,21 +294,15 @@ scenarios:
   code: |-
     assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=fr-CA');
     expectSuccess();
-- name: '[Inject] The URL carries no lang when the page language is empty'
+- name: '[Inject] The URL carries no lang when the page language is empty, only whitespace or not a string'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: '' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
-    expectSuccess();
-- name: '[Inject] The URL carries no lang when the page language is only whitespace'
-  code: |-
-    assertThat(injectedUrl({ pageLanguage: '  \t ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    ['', '  \t ', 5].forEach(function (pageLanguage) {
+      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    });
     expectSuccess();
 - name: '[Inject] The page language is trimmed'
   code: |-
     assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=de-DE');
-    expectSuccess();
-- name: '[Inject] The URL carries no lang when the page language is not a string'
-  code: |-
-    assertThat(injectedUrl({ pageLanguage: 5 })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
     expectSuccess();
 - name: '[Inject] The page language is URL-encoded'
   code: |-
@@ -374,30 +365,24 @@ scenarios:
 - name: '[Validation] Rejects a host with extra labels'
   code: |-
     expectRejected({ stapeDomain: 'a.abcdefgh.euf.stape.net' });
-- name: '[Validation] Rejects a value with a scheme'
+- name: '[Validation] Rejects a value with a scheme, a path, a port or a space'
   code: |-
-    expectRejected({ stapeDomain: 'https://abcdefgh.euf.stape.net' });
-- name: '[Validation] Rejects a value with a path'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net/x' });
-- name: '[Validation] Rejects a value with a port'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net:8443' });
-- name: '[Validation] Rejects a value with a space'
-  code: |-
-    expectRejected({ stapeDomain: 'abcdefgh.euf.stape.net ' });
+    [
+      'https://abcdefgh.euf.stape.net',
+      'abcdefgh.euf.stape.net/x',
+      'abcdefgh.euf.stape.net:8443',
+      'abcdefgh.euf.stape.net '
+    ].forEach(function (stapeDomain) {
+      expectRejected({ stapeDomain: stapeDomain });
+    });
 - name: '[Validation] Rejects an upper-case host'
   code: |-
     expectRejected({ stapeDomain: 'ABCDEFGH.euf.stape.net' });
-- name: '[Validation] Rejects an empty Stape domain'
+- name: '[Validation] Rejects an empty, missing or non-string Stape domain'
   code: |-
-    expectRejected({ stapeDomain: '' });
-- name: '[Validation] Rejects a missing Stape domain'
-  code: |-
-    expectRejected({ stapeDomain: undefined });
-- name: '[Validation] Rejects a Stape domain that is not a string'
-  code: |-
-    expectRejected({ stapeDomain: 12345 });
+    ['', undefined, 12345].forEach(function (stapeDomain) {
+      expectRejected({ stapeDomain: stapeDomain });
+    });
 - name: '[Validation] Rejects a host whose zone is not followed by stape'
   code: |-
     expectRejected({ stapeDomain: 'abcdefgh.euf.notstape.net' });
@@ -470,14 +455,15 @@ setup: |-
     calls.push('copyFromWindow:' + key);
     return fakeWindow[key];
   });
-  mock('setInWindow', function (key, value) {
+  mock('setInWindow', function (key, value, overrideExisting) {
     calls.push('setInWindow:' + key);
+    if (!overrideExisting && fakeWindow[key] !== undefined) return false;
     fakeWindow[key] = value;
     return true;
   });
   mock('callInWindow', function (path, command, type, settings) {
     calls.push('callInWindow:' + path);
-    if (path === 'uetq.push') fakeWindow.uetq.push(command, type, settings);
+    if (path === 'uetq.push' && fakeWindow.uetq) fakeWindow.uetq.push(command, type, settings);
   });
   mock('setDefaultConsentState', function () {
     calls.push('setDefaultConsentState');

@@ -39,7 +39,7 @@ if (data.tcf && !copyFromWindow('__tcfapi')) {
   namespace.tcfStub = true;
 }
 if (data.uet) {
-  if (!copyFromWindow('uetq')) setInWindow('uetq', [], false);
+  setInWindow('uetq', [], false);
   callInWindow('uetq.push', 'consent', 'default', { ad_storage: 'denied' });
   namespace.uetFloor = true;
 }

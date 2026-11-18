@@ -28,11 +28,11 @@ On each page, in this order:
 5. **Installs the TCF API queue** `window.__tcfapi` when _IAB TCF is on for this container_ is ticked and the page has no `__tcfapi` yet (see _TCF_ below).
 6. **Sets the UET consent default** when _Microsoft Consent (UET & Clarity) is on for this container_ is ticked: pushes `('consent', 'default', { ad_storage: 'denied' })` into `window.uetq` (see _Microsoft UET_ below).
 7. **Writes the namespace** `window.__stapeCmp = { dataLayer: <data layer name>, gcmFloor: true }`, with `tcfStub: true` when the tag installed the TCF API queue and `uetFloor: true` when it set the UET default. Apart from the TCF API queue and `uetq`, nothing else is written to `window`, the tag never touches your data layer array and it never creates `window.gtag`.
-8. **Loads the CMP** from `https://<Stape domain>/<container identifier>/cmp/bundle.js`. The container identifier is the first label of the Stape domain. The tag reports success or failure to GTM when the script loads or fails.
+8. **Loads the CMP** through `https://<Stape domain>/<container identifier>/cmp/v1/template.js`, which loads the CMP of your container whose domain covers the page. The container identifier is the first label of the Stape domain. A page that none of the container's CMPs covers loads no CMP and keeps the denied default. The tag reports success or failure to GTM when the script loads or fails.
 
 ### Language
 
-The tag appends `?lang=` to the bundle URL with the value of the **Page language** field, trimmed and URL-encoded. When the field is empty, `?lang=` is left out and the CMP uses your container's default language.
+The tag appends `?lang=` to the script URL with the value of the **Page language** field, trimmed and URL-encoded, and the script passes it on to the CMP. When the field is empty, `?lang=` is left out and the CMP uses your container's default language.
 
 A GTM template cannot read the page's `<html lang>` attribute or the browser's language, so the tag cannot detect the language itself. To follow the page, create a GTM variable that returns it (for example a Custom JavaScript variable returning `document.documentElement.lang`) and select it in the field. The CMP selects the language from what you pass; a language the container has no copy for falls back to the container's default language.
 

@@ -171,7 +171,7 @@ function getBundleUrl(domain) {
   const language = getLanguage();
   const query = language ? '?lang=' + encodeUriComponent(language) : '';
 
-  return 'https://' + domain + '/' + identifier + '/cmp/bundle.js' + query;
+  return 'https://' + domain + '/' + identifier + '/cmp/v1/template.js' + query;
 }
 
 // The IAB CmpApi takes over a stub by calling it with no arguments and draining what it returns.
@@ -1000,27 +1000,27 @@ scenarios:
 - name: '[Inject] The URL carries the container identifier and no lang when the page
     language is absent'
   code: |-
-    assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js');
     expectSuccess();
 - name: '[Inject] The URL carries the page language when it is given'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=fr-CA');
+    assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js?lang=fr-CA');
     expectSuccess();
 - name: '[Inject] The URL carries no lang when the page language is empty, only
     whitespace or not a string'
   code: |-
     ['', '  \t ', 5].forEach(function (pageLanguage) {
-      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js');
     });
     expectSuccess();
 - name: '[Inject] The page language is trimmed'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=de-DE');
+    assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js?lang=de-DE');
     expectSuccess();
 - name: '[Inject] The page language is URL-encoded'
   code: |-
     assertThat(injectedUrl({ pageLanguage: 'en US&x=1' })).isEqualTo(
-      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=en%20US%26x%3D1'
+      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js?lang=en%20US%26x%3D1'
     );
     expectSuccess();
 - name: '[Inject] A zone that starts with c is accepted'
@@ -1031,7 +1031,7 @@ scenarios:
       onSuccess();
     });
     runCode(createMockData({ stapeDomain: 'abcdefgh.cne.stape.net' }));
-    assertThat(url).isEqualTo('https://abcdefgh.cne.stape.net/abcdefgh/cmp/bundle.js');
+    assertThat(url).isEqualTo('https://abcdefgh.cne.stape.net/abcdefgh/cmp/v1/template.js');
     expectSuccess();
 - name: '[Inject] A stape io domain and the l variant are accepted'
   code: |-
@@ -1041,7 +1041,7 @@ scenarios:
       onSuccess();
     });
     runCode(createMockData({ stapeDomain: 'ijklmnop.lgsr.stape.io' }));
-    assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/bundle.js');
+    assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/v1/template.js');
     expectSuccess();
 - name: '[Inject] A loaded script reports success'
   code: |-
@@ -1110,7 +1110,7 @@ scenarios:
     assertThat(label.length).isEqualTo(63);
 
     assertThat(injectedUrl({ stapeDomain: label + '.euf.stape.net' })).isEqualTo(
-      'https://' + label + '.euf.stape.net/' + label + '/cmp/bundle.js'
+      'https://' + label + '.euf.stape.net/' + label + '/cmp/v1/template.js'
     );
     expectSuccess();
 - name: '[Validation] Rejects a label that starts with a hyphen'
@@ -1122,7 +1122,7 @@ scenarios:
 - name: '[Validation] Accepts hyphens inside a label'
   code: |-
     assertThat(injectedUrl({ stapeDomain: 'abcd-efgh.e-uf.stape.net' })).isEqualTo(
-      'https://abcd-efgh.e-uf.stape.net/abcd-efgh/cmp/bundle.js'
+      'https://abcd-efgh.e-uf.stape.net/abcd-efgh/cmp/v1/template.js'
     );
     expectSuccess();
 setup: |-
@@ -1206,6 +1206,9 @@ setup: |-
 
 
 ___NOTES___
+
+2026-11-18 - Change Notes:
+  - Load the CMP through the container's /cmp/v1/template.js script, which loads the CMP whose domain covers the page, so one tag serves a container with a CMP per site; a page no CMP covers loads none and keeps the denied default
 
 2026-11-12 - Change Notes:
   - Add the Microsoft UET option: when ticked, the tag pushes UET's denied consent default (ad_storage) into window.uetq before the CMP loads, so a UET tag in the same container never fires without a default, and marks the namespace with uetFloor; an existing uetq is kept and receives the push

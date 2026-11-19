@@ -28,7 +28,7 @@ On each page, in this order:
 5. **Installs the TCF API queue** `window.__tcfapi` when _IAB TCF is on for this container_ is ticked and the page has no `__tcfapi` yet (see _TCF_ below).
 6. **Sets the UET consent default** when _Microsoft Consent (UET & Clarity) is on for this container_ is ticked: pushes `('consent', 'default', { ad_storage: 'denied' })` into `window.uetq` (see _Microsoft UET_ below).
 7. **Writes the namespace** `window.__stapeCmp = { dataLayer: <data layer name>, gcmFloor: true }`, with `tcfStub: true` when the tag installed the TCF API queue and `uetFloor: true` when it set the UET default. Apart from the TCF API queue and `uetq`, nothing else is written to `window`, the tag never touches your data layer array and it never creates `window.gtag`.
-8. **Loads the CMP** through `https://<Stape domain>/<container identifier>/cmp/v1/template.js`, which loads the CMP of your container whose domain covers the page. The container identifier is the first label of the Stape domain. A page that none of the container's CMPs covers loads no CMP and keeps the denied default. The tag reports success or failure to GTM when the script loads or fails.
+8. **Loads the CMP** through `https://<Stape domain>/<container identifier>/cmp/v1/template.js`, which loads the CMP of your container whose domain covers the page. The container identifier is the first label of the Stape domain. A page that none of the container's CMPs covers loads no CMP and keeps the denied default. The tag reports success to GTM once that script loads, whether or not it installed a CMP, and failure when it fails to load.
 
 ### Language
 
@@ -67,7 +67,7 @@ The `window.__stapeCmp` object exists as soon as the tag runs, but its methods a
 
 | Permission | Why |
 | --- | --- |
-| Injects scripts | Loads the CMP bundle from `https://*.stape.net/*` and `https://*.stape.io/*`. |
+| Injects scripts | Loads the container's CMP script from `https://*.stape.net/*` and `https://*.stape.io/*`. |
 | Accesses global variables | Reads and writes `__stapeCmp`, `__tcfapi` for the TCF API queue, and `uetq` for the UET consent default, calling `uetq.push`. |
 | Accesses consent state | Sets the default for every Consent Mode signal. |
 | Writes to the data layer | Sets the developer ID `developer_id.dNjQ3Nj`, and `ads_data_redaction` and `url_passthrough` when those options are ticked. |

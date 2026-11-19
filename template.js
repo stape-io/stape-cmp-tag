@@ -45,14 +45,14 @@ if (data.uet) {
 }
 setInWindow('__stapeCmp', namespace, false);
 
-const bundleUrl = getBundleUrl(stapeDomain);
-injectScript(bundleUrl, data.gtmOnSuccess, data.gtmOnFailure, bundleUrl);
+const templateUrl = getTemplateUrl(stapeDomain);
+injectScript(templateUrl, data.gtmOnSuccess, data.gtmOnFailure, templateUrl);
 
 /*==============================================================================
 Helpers
 ==============================================================================*/
 
-function getBundleUrl(domain) {
+function getTemplateUrl(domain) {
   const identifier = domain.split('.')[0];
   const language = getLanguage();
   const query = language ? '?lang=' + encodeUriComponent(language) : '';

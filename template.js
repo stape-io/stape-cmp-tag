@@ -11,9 +11,10 @@ const setInWindow = require('setInWindow');
 ==============================================================================*/
 
 const stapeDomain = data.stapeDomain;
+const cmpId = data.cmpId;
 const dataLayerName = data.dataLayerName || 'dataLayer';
 
-if (!isStapeDomain(stapeDomain)) return data.gtmOnFailure();
+if (!isStapeDomain(stapeDomain) || !isCmpId(cmpId)) return data.gtmOnFailure();
 
 if (copyFromWindow('__stapeCmp')) return data.gtmOnSuccess();
 
@@ -45,19 +46,19 @@ if (data.uet) {
 }
 setInWindow('__stapeCmp', namespace, false);
 
-const templateUrl = getTemplateUrl(stapeDomain);
-injectScript(templateUrl, data.gtmOnSuccess, data.gtmOnFailure, templateUrl);
+const bundleUrl = getBundleUrl(stapeDomain, cmpId);
+injectScript(bundleUrl, data.gtmOnSuccess, data.gtmOnFailure, bundleUrl);
 
 /*==============================================================================
 Helpers
 ==============================================================================*/
 
-function getTemplateUrl(domain) {
+function getBundleUrl(domain, cmpId) {
   const identifier = domain.split('.')[0];
   const language = getLanguage();
   const query = language ? '?lang=' + encodeUriComponent(language) : '';
 
-  return 'https://' + domain + '/' + identifier + '/cmp/v1/template.js' + query;
+  return 'https://' + domain + '/' + identifier + '/cmp/v1/' + cmpId + '/bundle.js' + query;
 }
 
 // The IAB CmpApi takes over a stub by calling it with no arguments and draining what it returns.
@@ -81,6 +82,22 @@ function isStapeDomain(domain) {
   if (labels.length !== 4) return false;
   if (labels[2] !== 'stape' || (labels[3] !== 'net' && labels[3] !== 'io')) return false;
   return isHostLabel(labels[0]) && isHostLabel(labels[1]);
+}
+
+// 8-4-4-4-12 hex digits, in either case
+function isCmpId(id) {
+  if (getType(id) !== 'string' || id.length !== 36) return false;
+
+  const hex = '0123456789abcdefABCDEF';
+  for (let i = 0; i < id.length; i++) {
+    const char = id.charAt(i);
+    if (i === 8 || i === 13 || i === 18 || i === 23) {
+      if (char !== '-') return false;
+    } else if (hex.indexOf(char) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function isHostLabel(label) {

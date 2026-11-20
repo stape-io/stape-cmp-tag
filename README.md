@@ -1,6 +1,6 @@
 # Stape CMP Tag for Google Tag Manager Web
 
-This tag installs your Stape container's consent management platform (CMP) on a site that loads Google Tag Manager from `googletagmanager.com`. It sets the denied Google Consent Mode default and loads the CMP from your container's Stape domain, so the banner appears and Consent Mode updates follow the visitor's choice.
+This tag installs your Stape container's consent management platform (CMP) on a site that loads Google Tag Manager from `googletagmanager.com`. It sets the denied Google Consent Mode default and loads the CMP you name by its ID from your container's Stape domain, so the banner appears and Consent Mode updates follow the visitor's choice.
 
 ⚠️ If your site loads Google Tag Manager through the Stape Custom Loader, the CMP is already installed there and you do not need this tag. ⚠️
 
@@ -9,13 +9,16 @@ This tag installs your Stape container's consent management platform (CMP) on a 
 1. **Import** the template from the Community Template Gallery into your GTM Web workspace.
 2. **Create** a new tag using the _Stape CMP_ template.
 3. **Enter** your Stape domain, the domain of your Stape container, for example `abcdefgh.euf.stape.net` or `abcdefgh.euf.stape.io`. To find it, go to the [Stape Admin panel](https://app.stape.io/container), select the sGTM container, go to the _Settings_ tab and scroll down to the _Domains (Tagging Server URLs)_ section. The domain is after the _Built-in container URL_ text.
-4. **Tick** _IAB TCF is on for this container_ if IAB TCF is switched on in your Stape CMP settings (see _TCF_ below).
-5. **Tick** _Microsoft Consent (UET & Clarity) is on for this container_ if Microsoft Consent (UET & Clarity) is switched on in your Stape CMP settings (see _Microsoft UET_ below).
-6. **Fill in** _Page language_ under _Advanced settings_ if you want the CMP in the page's language (see _Language_ below). You can leave it empty.
-7. **Assign** the **Consent Initialization - All Pages** trigger. The tag must run before any other tag so the denied default is in place first.
-8. **Publish** the container.
+4. **Enter** your CMP ID, the UUID of the CMP the tag loads, for example `0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d`. To find it, go to the [Stape Admin panel](https://app.stape.io/container), select the sGTM container and open the CMP. The ID is the last part of the page address: `/container/{id}/cmp/{CMP ID}`.
+5. **Tick** _IAB TCF is on for this container_ if IAB TCF is switched on in your Stape CMP settings (see _TCF_ below).
+6. **Tick** _Microsoft Consent (UET & Clarity) is on for this container_ if Microsoft Consent (UET & Clarity) is switched on in your Stape CMP settings (see _Microsoft UET_ below).
+7. **Fill in** _Page language_ under _Advanced settings_ if you want the CMP in the page's language (see _Language_ below). You can leave it empty.
+8. **Assign** the **Consent Initialization - All Pages** trigger. The tag must run before any other tag so the denied default is in place first.
+9. **Publish** the container.
 
 The Stape domain is the container domain under `stape.net` or `stape.io`, not your custom domain.
+
+A CMP that is copied or created again gets a new ID, so update the tag's CMP ID when you replace the CMP.
 
 ## What the Tag Does
 
@@ -28,11 +31,11 @@ On each page, in this order:
 5. **Installs the TCF API queue** `window.__tcfapi` when _IAB TCF is on for this container_ is ticked and the page has no `__tcfapi` yet (see _TCF_ below).
 6. **Sets the UET consent default** when _Microsoft Consent (UET & Clarity) is on for this container_ is ticked: pushes `('consent', 'default', { ad_storage: 'denied' })` into `window.uetq` (see _Microsoft UET_ below).
 7. **Writes the namespace** `window.__stapeCmp = { dataLayer: <data layer name>, gcmFloor: true }`, with `tcfStub: true` when the tag installed the TCF API queue and `uetFloor: true` when it set the UET default. Apart from the TCF API queue and `uetq`, nothing else is written to `window`, the tag never touches your data layer array and it never creates `window.gtag`.
-8. **Loads the CMP** through `https://<Stape domain>/<container identifier>/cmp/v1/template.js`, which loads the CMP of your container whose domain covers the page. The container identifier is the first label of the Stape domain. A page that none of the container's CMPs covers loads no CMP and keeps the denied default. The tag reports success to GTM once that script loads, whether or not it installed a CMP, and failure when it fails to load.
+8. **Loads the CMP** from `https://<Stape domain>/<container identifier>/cmp/v1/<CMP ID>/bundle.js`. The container identifier is the first label of the Stape domain. The tag reports success to GTM once the bundle loads and failure when it fails to load.
 
 ### Language
 
-The tag appends `?lang=` to the script URL with the value of the **Page language** field, trimmed and URL-encoded, and the script passes it on to the CMP. When the field is empty, `?lang=` is left out and the CMP uses your container's default language.
+The tag appends `?lang=` to the bundle URL with the value of the **Page language** field, trimmed and URL-encoded. When the field is empty, `?lang=` is left out and the CMP uses your container's default language.
 
 A GTM template cannot read the page's `<html lang>` attribute or the browser's language, so the tag cannot detect the language itself. To follow the page, create a GTM variable that returns it (for example a Custom JavaScript variable returning `document.documentElement.lang`) and select it in the field. The CMP selects the language from what you pass; a language the container has no copy for falls back to the container's default language.
 
@@ -67,7 +70,7 @@ The `window.__stapeCmp` object exists as soon as the tag runs, but its methods a
 
 | Permission | Why |
 | --- | --- |
-| Injects scripts | Loads the container's CMP script from `https://*.stape.net/*` and `https://*.stape.io/*`. |
+| Injects scripts | Loads the CMP bundle from `https://*.stape.net/*` and `https://*.stape.io/*`. |
 | Accesses global variables | Reads and writes `__stapeCmp`, `__tcfapi` for the TCF API queue, and `uetq` for the UET consent default, calling `uetq.push`. |
 | Accesses consent state | Sets the default for every Consent Mode signal. |
 | Writes to the data layer | Sets the developer ID `developer_id.dNjQ3Nj`, and `ads_data_redaction` and `url_passthrough` when those options are ticked. |

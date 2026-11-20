@@ -22,7 +22,7 @@ ___INFO___
     "displayName": "stape-io",
     "thumbnail": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAABYElEQVR4AZ1TAUQFQRBdhBBCCCGEECCE8IEAkCT1b8ftdrt7oYAQ+gQIAUIA+AgQAoQQAgSAACGEcDjUPHag27vu32McNzNv386bVf9hrywXiGheDcWhtSvahGtt3Jc2/iPL/SVRudybYJy7TW6cctQxpjr3D/z94ag47sbGb7QTHPsdVvCMBqiAGqiSPBXFurbhNpJxTXgk60cNIk4+cXxmxp1iLqoFB0WxpK2/wGHoaSFCohtEZ4tSP5iIZ7ULJZjjQCIh8TXmiKv3IsLedJHE+jf+f98gggucfI+yeW+K7TYSAMbAxQSRu4KtWLq4Bt9YwhTJkSnXUKtzZ5pu2LCFpNgvOyUkiUNr2bPUnF5xLcwIzdq6m78kUAznGvNJqULRaDKZSzxgUVoR+VXVhcyEcyET90SJXDezbl/1AZ4AGuAiO3MSZ1JhLnyQVrMA9nPjCwjlkcqrHwRYLe504RfU6/XwKT3D8gAAAABJRU5ErkJggg\u003d\u003d"
   },
-  "description": "Installs Stape\u0027s CMP. Add on Consent Initialization and enter your container domain. Not needed if your site loads GTM via Stape Custom Loader, as CMP is already installed.",
+  "description": "Installs Stape\u0027s CMP. Add on Consent Initialization and enter your container domain and CMP ID. Not needed if your site loads GTM via Stape Custom Loader, as CMP is already installed.",
   "containerContexts": [
     "WEB"
   ]
@@ -50,6 +50,26 @@ ___TEMPLATE_PARAMETERS___
       }
     ],
     "help": "The domain of your Stape container, for example \u003ci\u003eabcdefgh.euf.stape.net\u003c/i\u003e or \u003ci\u003eabcdefgh.euf.stape.io\u003c/i\u003e.\n\u003cbr/\u003e\u003cbr/\u003e\nTo find the \u003cb\u003eStape domain\u003c/b\u003e, go to the \u003ca href\u003d\"https://app.stape.io/container\"\u003eStape Admin panel\u003c/a\u003e, select the sGTM container, go to the \u003ci\u003eSettings\u003c/i\u003e tab and scroll down to the \u003ci\u003eDomains (Tagging Server URLs)\u003c/i\u003e section. The domain is after the \u003ci\u003eBuilt-in container URL\u003c/i\u003e text.\n\u003cbr/\u003e\u003cbr/\u003e\nMake sure to:\n\u003cul\u003e\u003cli\u003euse the \u003ci\u003estape.net\u003c/i\u003e or \u003ci\u003estape.io\u003c/i\u003e domain, \u003cb\u003enot\u003c/b\u003e your custom domain;\u003c/li\u003e\u003cli\u003enot include \u003ci\u003ehttps://\u003c/i\u003e or a path.\u003c/li\u003e\u003c/ul\u003e",
+    "alwaysInSummary": true
+  },
+  {
+    "type": "TEXT",
+    "name": "cmpId",
+    "displayName": "CMP ID",
+    "simpleValueType": true,
+    "valueValidators": [
+      {
+        "type": "NON_EMPTY"
+      },
+      {
+        "type": "REGEX",
+        "args": [
+          "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        ],
+        "errorMessage": "Enter the ID of your CMP, a UUID such as 0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d."
+      }
+    ],
+    "help": "The ID of the CMP the tag loads, a UUID such as <i>0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d</i>.\n<br/><br/>\nTo find the <b>CMP ID</b>, go to the <a href=\"https://app.stape.io/container\">Stape Admin panel</a>, select the sGTM container and open the CMP. The ID is the last part of the page address: <i>/container/{id}/cmp/{CMP ID}</i>.\n<br/><br/>\nA CMP that is copied or created again gets a new ID, so update this field when you replace the CMP.",
     "alwaysInSummary": true
   },
   {
@@ -125,9 +145,10 @@ const setInWindow = require('setInWindow');
 ==============================================================================*/
 
 const stapeDomain = data.stapeDomain;
+const cmpId = data.cmpId;
 const dataLayerName = data.dataLayerName || 'dataLayer';
 
-if (!isStapeDomain(stapeDomain)) return data.gtmOnFailure();
+if (!isStapeDomain(stapeDomain) || !isCmpId(cmpId)) return data.gtmOnFailure();
 
 if (copyFromWindow('__stapeCmp')) return data.gtmOnSuccess();
 
@@ -159,19 +180,19 @@ if (data.uet) {
 }
 setInWindow('__stapeCmp', namespace, false);
 
-const templateUrl = getTemplateUrl(stapeDomain);
-injectScript(templateUrl, data.gtmOnSuccess, data.gtmOnFailure, templateUrl);
+const bundleUrl = getBundleUrl(stapeDomain, cmpId);
+injectScript(bundleUrl, data.gtmOnSuccess, data.gtmOnFailure, bundleUrl);
 
 /*==============================================================================
 Helpers
 ==============================================================================*/
 
-function getTemplateUrl(domain) {
+function getBundleUrl(domain, cmpId) {
   const identifier = domain.split('.')[0];
   const language = getLanguage();
   const query = language ? '?lang=' + encodeUriComponent(language) : '';
 
-  return 'https://' + domain + '/' + identifier + '/cmp/v1/template.js' + query;
+  return 'https://' + domain + '/' + identifier + '/cmp/v1/' + cmpId + '/bundle.js' + query;
 }
 
 // The IAB CmpApi takes over a stub by calling it with no arguments and draining what it returns.
@@ -195,6 +216,22 @@ function isStapeDomain(domain) {
   if (labels.length !== 4) return false;
   if (labels[2] !== 'stape' || (labels[3] !== 'net' && labels[3] !== 'io')) return false;
   return isHostLabel(labels[0]) && isHostLabel(labels[1]);
+}
+
+// 8-4-4-4-12 hex digits, in either case
+function isCmpId(id) {
+  if (getType(id) !== 'string' || id.length !== 36) return false;
+
+  const hex = '0123456789abcdefABCDEF';
+  for (let i = 0; i < id.length; i++) {
+    const char = id.charAt(i);
+    if (i === 8 || i === 13 || i === 18 || i === 23) {
+      if (char !== '-') return false;
+    } else if (hex.indexOf(char) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function isHostLabel(label) {
@@ -1000,27 +1037,27 @@ scenarios:
 - name: '[Inject] The URL carries the container identifier and no lang when the page
     language is absent'
   code: |-
-    assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js');
+    assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
     expectSuccess();
 - name: '[Inject] The URL carries the page language when it is given'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js?lang=fr-CA');
+    assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js?lang=fr-CA');
     expectSuccess();
 - name: '[Inject] The URL carries no lang when the page language is empty, only
     whitespace or not a string'
   code: |-
     ['', '  \t ', 5].forEach(function (pageLanguage) {
-      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js');
+      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
     });
     expectSuccess();
 - name: '[Inject] The page language is trimmed'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js?lang=de-DE');
+    assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js?lang=de-DE');
     expectSuccess();
 - name: '[Inject] The page language is URL-encoded'
   code: |-
     assertThat(injectedUrl({ pageLanguage: 'en US&x=1' })).isEqualTo(
-      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/template.js?lang=en%20US%26x%3D1'
+      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js?lang=en%20US%26x%3D1'
     );
     expectSuccess();
 - name: '[Inject] A zone that starts with c is accepted'
@@ -1031,7 +1068,7 @@ scenarios:
       onSuccess();
     });
     runCode(createMockData({ stapeDomain: 'abcdefgh.cne.stape.net' }));
-    assertThat(url).isEqualTo('https://abcdefgh.cne.stape.net/abcdefgh/cmp/v1/template.js');
+    assertThat(url).isEqualTo('https://abcdefgh.cne.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
     expectSuccess();
 - name: '[Inject] A stape io domain and the l variant are accepted'
   code: |-
@@ -1041,7 +1078,13 @@ scenarios:
       onSuccess();
     });
     runCode(createMockData({ stapeDomain: 'ijklmnop.lgsr.stape.io' }));
-    assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/v1/template.js');
+    assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
+    expectSuccess();
+- name: '[Inject] The URL carries an upper-case CMP ID as it is entered'
+  code: |-
+    assertThat(injectedUrl({ cmpId: '0B1C2D3E-4F50-4A6B-8C7D-9E0F1A2B3C4D' })).isEqualTo(
+      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0B1C2D3E-4F50-4A6B-8C7D-9E0F1A2B3C4D/bundle.js'
+    );
     expectSuccess();
 - name: '[Inject] A loaded script reports success'
   code: |-
@@ -1090,6 +1133,26 @@ scenarios:
     ['', undefined, 12345].forEach(function (stapeDomain) {
       expectRejected({ stapeDomain: stapeDomain });
     });
+- name: '[Validation] Rejects an empty, missing or non-string CMP ID'
+  code: |-
+    ['', undefined, 12345].forEach(function (cmpId) {
+      expectRejected({ cmpId: cmpId });
+    });
+- name: '[Validation] Rejects a CMP ID that is not an 8-4-4-4-12 hex UUID'
+  code: |-
+    [
+      '0b1c2d3e4f504a6b8c7d9e0f1a2b3c4d',
+      '{0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d}',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4g',
+      '0b1c2d3e4-f50-4a6b-8c7d-9e0f1a2b3c4d',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d0',
+      ' 0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d ',
+      '0b1c2d3e-4f50-4a6b-8c7d/../bundle.js'
+    ].forEach(function (cmpId) {
+      expectRejected({ cmpId: cmpId });
+    });
 - name: '[Validation] Rejects a host whose zone is not followed by stape'
   code: 'expectRejected({ stapeDomain: ''abcdefgh.euf.notstape.net'' });'
 - name: '[Validation] Rejects a stape host with another top-level domain'
@@ -1110,7 +1173,7 @@ scenarios:
     assertThat(label.length).isEqualTo(63);
 
     assertThat(injectedUrl({ stapeDomain: label + '.euf.stape.net' })).isEqualTo(
-      'https://' + label + '.euf.stape.net/' + label + '/cmp/v1/template.js'
+      'https://' + label + '.euf.stape.net/' + label + '/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js'
     );
     expectSuccess();
 - name: '[Validation] Rejects a label that starts with a hyphen'
@@ -1122,7 +1185,7 @@ scenarios:
 - name: '[Validation] Accepts hyphens inside a label'
   code: |-
     assertThat(injectedUrl({ stapeDomain: 'abcd-efgh.e-uf.stape.net' })).isEqualTo(
-      'https://abcd-efgh.e-uf.stape.net/abcd-efgh/cmp/v1/template.js'
+      'https://abcd-efgh.e-uf.stape.net/abcd-efgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js'
     );
     expectSuccess();
 setup: |-
@@ -1131,6 +1194,7 @@ setup: |-
 
   var baseMockData = {
     stapeDomain: 'abcdefgh.euf.stape.net',
+    cmpId: '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d',
     tcf: false,
     uet: false,
     adsDataRedaction: false,
@@ -1208,7 +1272,7 @@ setup: |-
 ___NOTES___
 
 2026-11-18 - Change Notes:
-  - Load the CMP through the container's /cmp/v1/template.js script, which loads the CMP whose domain covers the page, so one tag serves a container with a CMP per site; a page no CMP covers loads none and keeps the denied default
+  - Add the required CMP ID field: the tag loads that CMP's bundle from /{identifier}/cmp/v1/{CMP ID}/bundle.js on the Stape domain, passing ?lang= on as before; a CMP ID that is not a UUID fails the tag like an invalid Stape domain does
 
 2026-11-12 - Change Notes:
   - Add the Microsoft UET option: when ticked, the tag pushes UET's denied consent default (ad_storage) into window.uetq before the CMP loads, so a UET tag in the same container never fires without a default, and marks the namespace with uetFloor; an existing uetq is kept and receives the push

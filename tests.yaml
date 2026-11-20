@@ -288,26 +288,26 @@ scenarios:
     expectSuccess();
 - name: '[Inject] The URL carries the container identifier and no lang when the page language is absent'
   code: |-
-    assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+    assertThat(injectedUrl()).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
     expectSuccess();
 - name: '[Inject] The URL carries the page language when it is given'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=fr-CA');
+    assertThat(injectedUrl({ pageLanguage: 'fr-CA' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js?lang=fr-CA');
     expectSuccess();
 - name: '[Inject] The URL carries no lang when the page language is empty, only whitespace or not a string'
   code: |-
     ['', '  \t ', 5].forEach(function (pageLanguage) {
-      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js');
+      assertThat(injectedUrl({ pageLanguage: pageLanguage })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
     });
     expectSuccess();
 - name: '[Inject] The page language is trimmed'
   code: |-
-    assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=de-DE');
+    assertThat(injectedUrl({ pageLanguage: ' de-DE ' })).isEqualTo('https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js?lang=de-DE');
     expectSuccess();
 - name: '[Inject] The page language is URL-encoded'
   code: |-
     assertThat(injectedUrl({ pageLanguage: 'en US&x=1' })).isEqualTo(
-      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/bundle.js?lang=en%20US%26x%3D1'
+      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js?lang=en%20US%26x%3D1'
     );
     expectSuccess();
 - name: '[Inject] A zone that starts with c is accepted'
@@ -318,7 +318,7 @@ scenarios:
       onSuccess();
     });
     runCode(createMockData({ stapeDomain: 'abcdefgh.cne.stape.net' }));
-    assertThat(url).isEqualTo('https://abcdefgh.cne.stape.net/abcdefgh/cmp/bundle.js');
+    assertThat(url).isEqualTo('https://abcdefgh.cne.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
     expectSuccess();
 - name: '[Inject] A stape io domain and the l variant are accepted'
   code: |-
@@ -328,7 +328,13 @@ scenarios:
       onSuccess();
     });
     runCode(createMockData({ stapeDomain: 'ijklmnop.lgsr.stape.io' }));
-    assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/bundle.js');
+    assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
+    expectSuccess();
+- name: '[Inject] The URL carries an upper-case CMP ID in lower case'
+  code: |-
+    assertThat(injectedUrl({ cmpId: '0B1C2D3E-4F50-4A6B-8C7D-9E0F1A2B3C4D' })).isEqualTo(
+      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js'
+    );
     expectSuccess();
 - name: '[Inject] A loaded script reports success'
   code: |-
@@ -383,6 +389,26 @@ scenarios:
     ['', undefined, 12345].forEach(function (stapeDomain) {
       expectRejected({ stapeDomain: stapeDomain });
     });
+- name: '[Validation] Rejects an empty, missing or non-string CMP ID'
+  code: |-
+    ['', undefined, 12345].forEach(function (cmpId) {
+      expectRejected({ cmpId: cmpId });
+    });
+- name: '[Validation] Rejects a CMP ID that is not an 8-4-4-4-12 hex UUID'
+  code: |-
+    [
+      '0b1c2d3e4f504a6b8c7d9e0f1a2b3c4d',
+      '{0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d}',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4g',
+      '0b1c2d3e4-f50-4a6b-8c7d-9e0f1a2b3c4d',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d0',
+      ' 0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d',
+      '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d ',
+      '0b1c2d3e-4f50-4a6b-8c7d/../bundle.js'
+    ].forEach(function (cmpId) {
+      expectRejected({ cmpId: cmpId });
+    });
 - name: '[Validation] Rejects a host whose zone is not followed by stape'
   code: |-
     expectRejected({ stapeDomain: 'abcdefgh.euf.notstape.net' });
@@ -407,7 +433,7 @@ scenarios:
     assertThat(label.length).isEqualTo(63);
 
     assertThat(injectedUrl({ stapeDomain: label + '.euf.stape.net' })).isEqualTo(
-      'https://' + label + '.euf.stape.net/' + label + '/cmp/bundle.js'
+      'https://' + label + '.euf.stape.net/' + label + '/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js'
     );
     expectSuccess();
 - name: '[Validation] Rejects a label that starts with a hyphen'
@@ -422,7 +448,7 @@ scenarios:
 - name: '[Validation] Accepts hyphens inside a label'
   code: |-
     assertThat(injectedUrl({ stapeDomain: 'abcd-efgh.e-uf.stape.net' })).isEqualTo(
-      'https://abcd-efgh.e-uf.stape.net/abcd-efgh/cmp/bundle.js'
+      'https://abcd-efgh.e-uf.stape.net/abcd-efgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js'
     );
     expectSuccess();
 setup: |-
@@ -431,6 +457,7 @@ setup: |-
 
   var baseMockData = {
     stapeDomain: 'abcdefgh.euf.stape.net',
+    cmpId: '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d',
     tcf: false,
     uet: false,
     adsDataRedaction: false,

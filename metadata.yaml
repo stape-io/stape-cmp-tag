@@ -1,6 +1,8 @@
 homepage: 'https://stape.io/'
 documentation: 'https://github.com/stape-io/stape-cmp-tag'
 versions:
+  - sha: ffa2b0ce8dc2b50b1c498c6f7f25a9fa989a02d4
+    changeNotes: Loads the CMP through the container's template script, so one tag serves a container with a CMP per site.
   - sha: 8a0676062e88df288887358963544223197ea7b5
     changeNotes: Adds a Microsoft UET option that sets UET's consent default before the CMP loads.
   - sha: 39ed8aec283d1003e067f9f99aeaf41e66b6a221

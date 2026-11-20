@@ -1,7 +1,7 @@
 homepage: 'https://stape.io/'
 documentation: 'https://github.com/stape-io/stape-cmp-tag'
 versions:
-  - sha: 716afe465de3eac30da489ffe67f3c1621cbf868
+  - sha: fec804c385dec15a700f876a263f42b50c7f5303
     changeNotes: Adds a required CMP ID field and loads that CMP's bundle by its UUID.
   - sha: 8a0676062e88df288887358963544223197ea7b5
     changeNotes: Adds a Microsoft UET option that sets UET's consent default before the CMP loads.

@@ -58,7 +58,7 @@ function getBundleUrl(domain, cmpId) {
   const language = getLanguage();
   const query = language ? '?lang=' + encodeUriComponent(language) : '';
 
-  return 'https://' + domain + '/' + identifier + '/cmp/v1/' + cmpId + '/bundle.js' + query;
+  return 'https://' + domain + '/' + identifier + '/cmp/v1/' + cmpId.toLowerCase() + '/bundle.js' + query;
 }
 
 // The IAB CmpApi takes over a stub by calling it with no arguments and draining what it returns.

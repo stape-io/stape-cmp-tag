@@ -192,7 +192,7 @@ function getBundleUrl(domain, cmpId) {
   const language = getLanguage();
   const query = language ? '?lang=' + encodeUriComponent(language) : '';
 
-  return 'https://' + domain + '/' + identifier + '/cmp/v1/' + cmpId + '/bundle.js' + query;
+  return 'https://' + domain + '/' + identifier + '/cmp/v1/' + cmpId.toLowerCase() + '/bundle.js' + query;
 }
 
 // The IAB CmpApi takes over a stub by calling it with no arguments and draining what it returns.
@@ -1080,10 +1080,10 @@ scenarios:
     runCode(createMockData({ stapeDomain: 'ijklmnop.lgsr.stape.io' }));
     assertThat(url).isEqualTo('https://ijklmnop.lgsr.stape.io/ijklmnop/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js');
     expectSuccess();
-- name: '[Inject] The URL carries an upper-case CMP ID as it is entered'
+- name: '[Inject] The URL carries an upper-case CMP ID in lower case'
   code: |-
     assertThat(injectedUrl({ cmpId: '0B1C2D3E-4F50-4A6B-8C7D-9E0F1A2B3C4D' })).isEqualTo(
-      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0B1C2D3E-4F50-4A6B-8C7D-9E0F1A2B3C4D/bundle.js'
+      'https://abcdefgh.euf.stape.net/abcdefgh/cmp/v1/0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d/bundle.js'
     );
     expectSuccess();
 - name: '[Inject] A loaded script reports success'
